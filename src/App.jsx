@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, ShoppingBag, Users, Volume2, VolumeX, Shield, Zap, Coins, Award, RotateCcw, Home, Sparkles } from 'lucide-react';
+import { Play, ShoppingBag, Users, Volume2, VolumeX, Coins, Award, RotateCcw, Home, BookOpen } from 'lucide-react';
 
 // --- SOUND ENGINE (Web Audio API) ---
 class SoundEngine {
@@ -8,16 +8,10 @@ class SoundEngine {
     this.muted = false;
     this.bgmInterval = null;
   }
-
   init() {
-    if (!this.ctx) {
-      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
-    }
+    if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (this.ctx.state === 'suspended') this.ctx.resume();
   }
-
   playTone(freq, type, duration, vol = 0.15, delay = 0) {
     if (this.muted || !this.ctx) return;
     const osc = this.ctx.createOscillator();
@@ -31,42 +25,26 @@ class SoundEngine {
     osc.start(this.ctx.currentTime + delay);
     osc.stop(this.ctx.currentTime + delay + duration);
   }
-
   coin() {
     this.playTone(987.77, 'sine', 0.12, 0.12, 0);
     this.playTone(1318.51, 'sine', 0.25, 0.12, 0.06);
   }
-
   jump() {
     this.playTone(320, 'triangle', 0.18, 0.15, 0);
     this.playTone(540, 'triangle', 0.2, 0.12, 0.05);
   }
-
-  slide() {
-    this.playTone(220, 'sawtooth', 0.18, 0.08, 0);
-  }
-
+  slide() { this.playTone(220, 'sawtooth', 0.18, 0.08, 0); }
   powerup() {
-    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
-      this.playTone(f, 'triangle', 0.2, 0.15, i * 0.06);
-    });
+    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => this.playTone(f, 'triangle', 0.2, 0.15, i * 0.06));
   }
-
   buy() {
     this.playTone(600, 'sine', 0.1, 0.15, 0);
     this.playTone(900, 'sine', 0.25, 0.15, 0.08);
   }
-
-  stumble() {
-    this.playTone(180, 'sawtooth', 0.25, 0.18, 0);
-  }
-
+  stumble() { this.playTone(180, 'sawtooth', 0.25, 0.18, 0); }
   gameover() {
-    [400, 350, 300, 220].forEach((f, i) => {
-      this.playTone(f, 'sawtooth', 0.28, 0.15, i * 0.12);
-    });
+    [400, 350, 300, 220].forEach((f, i) => this.playTone(f, 'sawtooth', 0.28, 0.15, i * 0.12));
   }
-
   startBgm() {
     this.stopBgm();
     if (this.muted) return;
@@ -79,29 +57,74 @@ class SoundEngine {
       }
     }, 260);
   }
-
   stopBgm() {
-    if (this.bgmInterval) {
-      clearInterval(this.bgmInterval);
-      this.bgmInterval = null;
-    }
+    if (this.bgmInterval) { clearInterval(this.bgmInterval); this.bgmInterval = null; }
   }
 }
-
 const sfx = new SoundEngine();
 
-// --- GAME DATA ---
+// --- SPRITE CROP COORDINATES (Normalized 0.0 to 1.0 on sheet1, sheet2, sheet3) ---
 const CHARACTERS = [
-  { id: 'labiba', name: 'লাবিবা', tier: 'Easy', price: 0, color: '#92400e', accent: '#fbbf24', heightScale: 0.72, trait: 'মিনি শিল্ড (ছোট সাইজ)', parents: ['masud', 'rokhsana'], gender: 'F' },
-  { id: 'tanha', name: 'তানহা', tier: 'Easy', price: 0, color: '#15803d', accent: '#ef4444', heightScale: 0.72, trait: 'কয়েন ম্যাগনেট পাওয়ার', parents: ['nargis', 'swapan'], gender: 'F' },
-  { id: 'ayat', name: 'আয়াত', tier: 'Easy', price: 0, color: '#dc2626', accent: '#fde047', heightScale: 0.74, trait: 'চকলেট স্পিড বুস্ট', parents: ['rupali', 'mamun'], gender: 'M' },
-  { id: 'jillu', name: 'জিল্লু', tier: 'Medium', price: 50, color: '#065f46', accent: '#38bdf8', heightScale: 0.88, trait: 'স্পিড + স্কেটবোর্ড + বেশি কয়েন', parents: ['shahin', 'selim'], gender: 'M' },
-  { id: 'raisha', name: 'রাইশা', tier: 'Medium', price: 50, color: '#eab308', accent: '#f43f5e', heightScale: 0.86, trait: 'স্মার্ট রাডার অ্যালার্ট', parents: ['nargis', 'swapan'], gender: 'F' },
-  { id: 'lamia', name: 'লামিয়া', tier: 'Medium', price: 50, color: '#ea580c', accent: '#22c55e', heightScale: 0.88, trait: 'ডাবল মানি (২x কয়েন)', parents: ['masud', 'rokhsana'], gender: 'F' },
-  { id: 'alif', name: 'আলিফ', tier: 'Medium', price: 50, color: '#db2777', accent: '#7dd3fc', heightScale: 0.88, slim: true, trait: 'রোগা-পাতলা উইন্ড গ্লাইডার', parents: ['rupali', 'mamun'], gender: 'M' },
-  { id: 'tisha', name: 'তিশা', tier: 'Hard', price: 80, color: '#ca8a04', accent: '#ec4899', heightScale: 0.96, trait: 'লাকি স্টাম্বল (হোঁচটে আউট হয় না)', parents: ['nargis', 'swapan'], gender: 'F' },
-  { id: 'simon', name: 'সিমন', tier: 'Hard', price: 90, color: '#f8fafc', accent: '#3b82f6', heightScale: 1.12, trait: 'অনেক লম্বা + মেগা হাই জাম্প', parents: ['shahin', 'selim'], gender: 'M' },
-  { id: 'siam', name: 'সিয়াম', tier: 'Hard', price: 100, color: '#e2e8f0', accent: '#f59e0b', heightScale: 1.0, glasses: true, trait: 'অল-ইন-ওয়ান সুপার পাওয়ার', parents: ['shahin', 'selim'], gender: 'M' },
+  {
+    id: 'labiba', name: 'লাবিবা', tier: 'Easy', price: 0, color: '#92400e', heightScale: 0.78,
+    trait: 'মিনি শিল্ড (ছোট সাইজ)', parents: ['masud', 'rokhsana'],
+    sheet: '/sheet1.jfif',
+    crops: { stand: [0.03, 0.05, 0.17, 0.18], run: [0.22, 0.05, 0.18, 0.18], power: [0.60, 0.05, 0.22, 0.18] }
+  },
+  {
+    id: 'tanha', name: 'তানহা', tier: 'Easy', price: 0, color: '#15803d', heightScale: 0.78,
+    trait: 'কয়েন ম্যাগনেট পাওয়ার', parents: ['nargis', 'swapan'],
+    sheet: '/sheet1.jfif',
+    crops: { stand: [0.03, 0.77, 0.17, 0.19], run: [0.22, 0.77, 0.18, 0.19], power: [0.76, 0.77, 0.20, 0.19] }
+  },
+  {
+    id: 'ayat', name: 'আয়াত', tier: 'Easy', price: 0, color: '#dc2626', heightScale: 0.80,
+    trait: 'চকলেট স্পিড বুস্ট', parents: ['rupali', 'mamun'],
+    sheet: '/sheet1.jfif',
+    crops: { stand: [0.03, 0.53, 0.17, 0.18], run: [0.22, 0.53, 0.18, 0.18], power: [0.72, 0.53, 0.23, 0.18] }
+  },
+  {
+    id: 'jillu', name: 'জিল্লু', tier: 'Medium', price: 50, color: '#065f46', heightScale: 0.92,
+    trait: 'স্পিড + স্কেটবোর্ড + বেশি কয়েন', parents: ['shahin', 'selim'],
+    sheet: '/sheet3.jfif',
+    crops: { stand: [0.06, 0.51, 0.18, 0.21], run: [0.35, 0.52, 0.25, 0.20], power: [0.71, 0.52, 0.26, 0.20] }
+  },
+  {
+    id: 'raisha', name: 'রাইশা', tier: 'Medium', price: 50, color: '#eab308', heightScale: 0.90,
+    trait: 'স্মার্ট রাডার অ্যালার্ট', parents: ['nargis', 'swapan'],
+    sheet: '/sheet3.jfif',
+    crops: { stand: [0.07, 0.76, 0.18, 0.20], run: [0.38, 0.76, 0.22, 0.20], power: [0.68, 0.75, 0.28, 0.21] }
+  },
+  {
+    id: 'lamia', name: 'লামিয়া', tier: 'Medium', price: 50, color: '#ea580c', heightScale: 0.92,
+    trait: 'ডাবল মানি (২x কয়েন)', parents: ['masud', 'rokhsana'],
+    sheet: '/sheet2.jfif',
+    crops: { stand: [0.06, 0.11, 0.22, 0.32], run: [0.34, 0.11, 0.27, 0.32], power: [0.65, 0.10, 0.32, 0.33] }
+  },
+  {
+    id: 'alif', name: 'আলিফ', tier: 'Medium', price: 50, color: '#db2777', heightScale: 0.92,
+    trait: 'রোগা-পাতলা উইন্ড গ্লাইডার', parents: ['rupali', 'mamun'],
+    sheet: '/sheet1.jfif',
+    crops: { stand: [0.03, 0.28, 0.17, 0.19], run: [0.22, 0.28, 0.18, 0.19], power: [0.66, 0.30, 0.26, 0.16] }
+  },
+  {
+    id: 'tisha', name: 'তিশা', tier: 'Hard', price: 80, color: '#ca8a04', heightScale: 0.98,
+    trait: 'লাকি স্টাম্বল (হোঁচটে আউট হয় না)', parents: ['nargis', 'swapan'],
+    sheet: '/sheet2.jfif',
+    crops: { stand: [0.06, 0.59, 0.22, 0.33], run: [0.34, 0.59, 0.27, 0.33], power: [0.66, 0.59, 0.31, 0.33] }
+  },
+  {
+    id: 'simon', name: 'সিমন', tier: 'Hard', price: 90, color: '#3b82f6', heightScale: 1.12,
+    trait: 'অনেক লম্বা + মেগা হাই জাম্প', parents: ['shahin', 'selim'],
+    sheet: '/sheet3.jfif',
+    crops: { stand: [0.07, 0.26, 0.17, 0.21], run: [0.36, 0.26, 0.26, 0.21], power: [0.73, 0.26, 0.23, 0.20] }
+  },
+  {
+    id: 'siam', name: 'সিয়াম', tier: 'Hard', price: 100, color: '#f59e0b', heightScale: 1.02,
+    trait: 'অল-ইন-ওয়ান সুপার পাওয়ার', parents: ['shahin', 'selim'],
+    sheet: '/sheet3.jfif',
+    crops: { stand: [0.07, 0.02, 0.17, 0.20], run: [0.37, 0.02, 0.23, 0.20], power: [0.71, 0.01, 0.26, 0.21] }
+  },
 ];
 
 const SHOP_ITEMS = [
@@ -117,7 +140,7 @@ const SHOP_ITEMS = [
   { id: 'watch', name: 'স্লো-মোশন ঘড়ি', price: 15, desc: 'চেসারদের গতি স্লো করে দেবে', icon: '⏱️' },
   { id: 'radarGlass', name: 'স্মার্ট রাডার চশমা', price: 20, desc: 'সামনে ওঁৎ পাতা বিপদ আগে দেখাবে', icon: '🕶️' },
   { id: 'converter', name: 'কয়েন কনভার্টার', price: 20, desc: 'সামনের বাধাগুলো কয়েন হয়ে যাবে', icon: '✨' },
-  { id: 'mysteryBox', name: 'মিস্ট্রি বক্স', price: 20, desc: 'খুললেই ১০ থেকে ৬০ কয়েন বোনাস!', icon: '🎁' },
+  { id: 'mysteryBox', name: 'মিস্ট্রি বক্স', price: 20, desc: 'খুললেই ১৫ থেকে ৬০ কয়েন বোনাস!', icon: '🎁' },
   { id: 'ninjaShoes', name: 'সাইলেন্ট স্নিকার্স', price: 20, desc: 'পায়ে শব্দ হবে না, চেসার দূরে থাকবে', icon: '👟' },
 ];
 
@@ -132,8 +155,65 @@ const CHASERS = [
   { id: 'rokhsana', name: 'রোখসানা', weapon: 'বেলন 🥖', color: '#6d28d9', dialog: 'পড়া শেষ না করলে আজকে কারো টিফিন নেই!' },
 ];
 
+// --- HELPER: Remove checkerboard background & prepare sprite sheet ---
+function processSpriteSheet(src) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.width;
+      c.height = img.height;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      try {
+        const imgData = ctx.getImageData(0, 0, c.width, c.height);
+        const d = imgData.data;
+        for (let i = 0; i < d.length; i += 4) {
+          const r = d[i], g = d[i + 1], b = d[i + 2];
+          const max = Math.max(r, g, b);
+          const min = Math.min(r, g, b);
+          // Remove gray/white checkerboard background pixels
+          if (max - min < 16 && min > 125 && max < 248) {
+            d[i + 3] = 0;
+          }
+        }
+        ctx.putImageData(imgData, 0, 0);
+      } catch (e) {
+        // Fallback if canvas pixel read is blocked
+      }
+      resolve(c);
+    };
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
+// --- SPRITE PREVIEW COMPONENT FOR UI CARDS ---
+function SpritePortrait({ char, pose = 'stand', sheets, className = 'w-16 h-16' }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    const sheetCanvas = sheets[char.sheet];
+    if (!canvas || !sheetCanvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const [nx, ny, nw, nh] = char.crops[pose] || char.crops.stand;
+    const sx = nx * sheetCanvas.width;
+    const sy = ny * sheetCanvas.height;
+    const sw = nw * sheetCanvas.width;
+    const sh = nh * sheetCanvas.height;
+
+    const scale = Math.min(canvas.width / sw, canvas.height / sh);
+    const dw = sw * scale;
+    const dh = sh * scale;
+    ctx.drawImage(sheetCanvas, sx, sy, sw, sh, (canvas.width - dw) / 2, (canvas.height - dh) / 2, dw, dh);
+  }, [char, pose, sheets]);
+
+  return <canvas ref={ref} width={140} height={140} className={className} />;
+}
+
 export default function App() {
-  // Persistent Storage
   const [coins, setCoins] = useState(() => Number(localStorage.getItem('pe_coins') || 20));
   const [highScore, setHighScore] = useState(() => Number(localStorage.getItem('pe_highscore') || 0));
   const [unlockedChars, setUnlockedChars] = useState(() => {
@@ -146,8 +226,8 @@ export default function App() {
     return saved ? JSON.parse(saved) : {};
   });
 
-  // UI States
-  const [screen, setScreen] = useState('menu'); // menu, chars, shop, playing, gameover
+  const [sheets, setSheets] = useState({});
+  const [screen, setScreen] = useState('menu'); // menu, chars, shop, bible, playing, gameover
   const [muted, setMuted] = useState(false);
   const [toast, setToast] = useState('');
   const [lastRunStats, setLastRunStats] = useState({ score: 0, coinsEarned: 0, caughtBy: null });
@@ -155,6 +235,20 @@ export default function App() {
 
   const canvasRef = useRef(null);
   const gameStateRef = useRef(null);
+
+  useEffect(() => {
+    Promise.all([
+      processSpriteSheet('/sheet1.jfif'),
+      processSpriteSheet('/sheet2.jfif'),
+      processSpriteSheet('/sheet3.jfif'),
+    ]).then(([s1, s2, s3]) => {
+      setSheets({
+        '/sheet1.jfif': s1,
+        '/sheet2.jfif': s2,
+        '/sheet3.jfif': s3,
+      });
+    });
+  }, []);
 
   useEffect(() => { localStorage.setItem('pe_coins', coins); }, [coins]);
   useEffect(() => { localStorage.setItem('pe_highscore', highScore); }, [highScore]);
@@ -220,13 +314,11 @@ export default function App() {
     showToast(`${item.icon} ${item.name} কেনা হয়েছে! (স্টক: ${(inventory[item.id] || 0) + 1})`);
   };
 
-  // --- START GAME ---
   const startGame = () => {
     sfx.init();
     sfx.startBgm();
     const char = CHARACTERS.find(c => c.id === selectedCharId) || CHARACTERS[0];
 
-    // Consume equipped items (1 unit each if owned) for this run
     const activeBuffs = {};
     const nextInv = { ...inventory };
     Object.keys(nextInv).forEach(key => {
@@ -237,13 +329,12 @@ export default function App() {
     });
     setInventory(nextInv);
 
-    // Innate character bonuses (only minor innate feel; main powers come from shop!)
     const baseSpeed = char.tier === 'Easy' ? 7.2 : char.tier === 'Medium' ? 8.4 : 9.4;
 
     gameStateRef.current = {
       running: true,
       char,
-      lane: 1, // 0: left, 1: center, 2: right
+      lane: 1,
       visualLane: 1,
       y: 0,
       vy: 0,
@@ -254,9 +345,9 @@ export default function App() {
       baseSpeed,
       distance: 0,
       runCoins: 0,
-      entities: [], // coins, obstacles, ambushers
+      entities: [],
       spawnTimer: 0,
-      chaserDist: activeBuffs.ninjaShoes ? 140 : 85, // closer means danger
+      chaserDist: activeBuffs.ninjaShoes ? 140 : 85,
       activeChaser: CHASERS[Math.floor(Math.random() * CHASERS.length)],
       activeDialog: '',
       dialogTimer: 0,
@@ -279,7 +370,7 @@ export default function App() {
     setScreen('playing');
   };
 
-  // --- GAME LOOP & RENDERING ---
+  // --- GAME LOOP ---
   useEffect(() => {
     if (screen !== 'playing') return;
     const canvas = canvasRef.current;
@@ -294,25 +385,17 @@ export default function App() {
     resize();
     window.addEventListener('resize', resize);
 
-    // Controls
     let touchStartX = 0;
     let touchStartY = 0;
 
-    const doLeft = () => {
-      const g = gameStateRef.current;
-      if (g && g.lane > 0) { g.lane--; sfx.slide(); }
-    };
-    const doRight = () => {
-      const g = gameStateRef.current;
-      if (g && g.lane < 2) { g.lane++; sfx.slide(); }
-    };
+    const doLeft = () => { const g = gameStateRef.current; if (g && g.lane > 0) { g.lane--; sfx.slide(); } };
+    const doRight = () => { const g = gameStateRef.current; if (g && g.lane < 2) { g.lane++; sfx.slide(); } };
     const doJump = () => {
       const g = gameStateRef.current;
       if (!g || g.isJumping) return;
       g.isJumping = true;
       g.isSliding = false;
-      const jumpPower = g.buffs.sneakers || g.char.id === 'simon' ? 17.5 : 14.5;
-      g.vy = jumpPower;
+      g.vy = g.buffs.sneakers || g.char.id === 'simon' ? 17.5 : 14.5;
       sfx.jump();
     };
     const doSlide = () => {
@@ -330,21 +413,17 @@ export default function App() {
       if (e.key === 'ArrowUp' || e.key === 'w' || e.key === ' ') doJump();
       if (e.key === 'ArrowDown' || e.key === 's') doSlide();
     };
-
     const onTouchStart = (e) => {
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
     };
-
     const onTouchEnd = (e) => {
       const dx = e.changedTouches[0].clientX - touchStartX;
       const dy = e.changedTouches[0].clientY - touchStartY;
       if (Math.abs(dx) > Math.abs(dy)) {
-        if (dx > 25) doRight();
-        else if (dx < -25) doLeft();
+        if (dx > 25) doRight(); else if (dx < -25) doLeft();
       } else {
-        if (dy < -25) doJump();
-        else if (dy > 25) doSlide();
+        if (dy < -25) doJump(); else if (dy > 25) doSlide();
       }
     };
 
@@ -360,41 +439,31 @@ export default function App() {
       const W = canvas.width;
       const H = canvas.height;
       const horizonY = H * 0.32;
-      const groundY = H * 0.84;
+      const groundY = H * 0.85;
 
-      // Update Buff Timers
-      Object.keys(g.buffTimers).forEach(k => {
-        if (g.buffTimers[k] > 0) g.buffTimers[k]--;
-      });
+      Object.keys(g.buffTimers).forEach(k => { if (g.buffTimers[k] > 0) g.buffTimers[k]--; });
       if (g.invincibleTimer > 0) g.invincibleTimer--;
       if (g.dialogTimer > 0) g.dialogTimer--;
 
-      // Speed & Distance
       const currentSpeed = g.buffTimers.chocolate > 0 ? g.baseSpeed + 5 : g.buffTimers.skateboard > 0 ? g.baseSpeed + 2.5 : g.baseSpeed + Math.min(4, g.distance / 2500);
       g.distance += currentSpeed * 0.15;
 
-      // Chaser recovery
       const chaserRecovery = g.buffTimers.watch > 0 ? 0.02 : 0.08;
       if (g.chaserDist < 110) g.chaserDist += chaserRecovery;
 
-      // Smooth Lane & Jump Physics
       g.visualLane += (g.lane - g.visualLane) * 0.22;
       if (g.isJumping) {
         g.y += g.vy;
         const gravity = (g.buffs.glider || g.char.id === 'alif') && g.vy < 0 ? 0.42 : 0.72;
         g.vy -= gravity;
-        if (g.y <= 0) {
-          g.y = 0;
-          g.vy = 0;
-          g.isJumping = false;
-        }
+        if (g.y <= 0) { g.y = 0; g.vy = 0; g.isJumping = false; }
       }
       if (g.isSliding) {
         g.slideTimer--;
         if (g.slideTimer <= 0) g.isSliding = false;
       }
 
-      // Spawn Entities (Generous coins + Obstacles + Ambush Chasers)
+      // Spawn Entities
       g.spawnTimer -= currentSpeed;
       if (g.spawnTimer <= 0) {
         g.spawnTimer = 155;
@@ -402,27 +471,15 @@ export default function App() {
         const roll = Math.random();
 
         if (roll < 0.48) {
-          // Spawn a line of 4 coins so player easily earns 50-100+ coins per run
-          for (let i = 0; i < 4; i++) {
-            g.entities.push({ type: 'coin', lane, z: 1.0 + i * 0.07 });
-          }
+          for (let i = 0; i < 4; i++) g.entities.push({ type: 'coin', lane, z: 1.0 + i * 0.07 });
         } else if (roll < 0.76) {
-          // Ambush Aunt/Uncle waiting on road!
           const ambusher = CHASERS[Math.floor(Math.random() * CHASERS.length)];
           const isParent = g.char.parents.includes(ambusher.id);
-          g.entities.push({
-            type: 'ambush',
-            lane,
-            z: 1.0,
-            chaser: ambusher,
-            isParent
-          });
-          // Add extra coins in safe adjacent lane
+          g.entities.push({ type: 'ambush', lane, z: 1.0, chaser: ambusher, isParent });
           const safeLane = (lane + 1) % 3;
           g.entities.push({ type: 'coin', lane: safeLane, z: 1.0 });
           g.entities.push({ type: 'coin', lane: safeLane, z: 1.08 });
         } else {
-          // Study Obstacle (Books stack or Study Table)
           const sub = Math.random() < 0.5 ? 'books' : 'table';
           g.entities.push({ type: 'obstacle', sub, lane, z: 1.0 });
           const safeLane = (lane + 2) % 3;
@@ -430,9 +487,7 @@ export default function App() {
         }
       }
 
-      // Perspective Helper
       const project = (laneIdx, z) => {
-        // z: 1 (horizon) -> 0 (player)
         const progress = 1 - z;
         const scale = 0.22 + progress * 0.95;
         const y = horizonY + Math.pow(progress, 1.35) * (groundY - horizonY);
@@ -441,12 +496,12 @@ export default function App() {
         return { x, y, scale, roadHalfW };
       };
 
-      // --- DRAW BACKGROUND (Environment changes with score) ---
+      // --- DRAW ENVIRONMENT ---
       const stage = g.distance < 350 ? 0 : g.distance < 850 ? 1 : 2;
       const skyColors = [
-        ['#fef3c7', '#fde68a'], // House Interior warm tone
-        ['#38bdf8', '#bae6fd'], // Rooftop bright sky
-        ['#fb923c', '#fed7aa'], // Neighborhood sunset
+        ['#fef3c7', '#fde68a'],
+        ['#38bdf8', '#bae6fd'],
+        ['#fb923c', '#fed7aa'],
       ];
       const grad = ctx.createLinearGradient(0, 0, 0, horizonY);
       grad.addColorStop(0, skyColors[stage][0]);
@@ -454,11 +509,9 @@ export default function App() {
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, horizonY);
 
-      // Ground
       ctx.fillStyle = stage === 0 ? '#d97706' : stage === 1 ? '#64748b' : '#16a34a';
       ctx.fillRect(0, horizonY, W, H - horizonY);
 
-      // Road Trapezoid
       ctx.beginPath();
       ctx.moveTo(W / 2 - W * 0.09, horizonY);
       ctx.lineTo(W / 2 + W * 0.09, horizonY);
@@ -468,7 +521,6 @@ export default function App() {
       ctx.fillStyle = stage === 0 ? '#fef9c3' : stage === 1 ? '#475569' : '#334155';
       ctx.fill();
 
-      // Lane Dividers
       ctx.strokeStyle = 'rgba(255,255,255,0.45)';
       ctx.lineWidth = 3;
       [-0.33, 0.33].forEach(offset => {
@@ -478,7 +530,6 @@ export default function App() {
         ctx.stroke();
       });
 
-      // Moving Floor Stripes
       const stripeOffset = (g.frame * currentSpeed * 0.015) % 0.25;
       for (let z = stripeOffset; z < 1; z += 0.25) {
         const p = project(1, z);
@@ -486,26 +537,20 @@ export default function App() {
         ctx.fillRect(W / 2 - p.roadHalfW, p.y, p.roadHalfW * 2, 6 * p.scale);
       }
 
-      // --- UPDATE & DRAW ENTITIES ---
+      // --- ENTITIES ---
       g.entities.sort((a, b) => b.z - a.z);
 
       for (let i = g.entities.length - 1; i >= 0; i--) {
         const ent = g.entities[i];
         ent.z -= currentSpeed * 0.0022;
 
-        // Coin Converter Power
-        if (g.buffTimers.converter > 0 && (ent.type === 'obstacle' || ent.type === 'ambush')) {
-          ent.type = 'coin';
-        }
-
-        // Magnet Power
+        if (g.buffTimers.converter > 0 && (ent.type === 'obstacle' || ent.type === 'ambush')) ent.type = 'coin';
         if (ent.type === 'coin' && (g.buffs.magnet || g.char.id === 'tanha') && ent.z < 0.45 && ent.z > 0) {
           ent.lane += (g.visualLane - ent.lane) * 0.25;
         }
 
         const p = project(ent.lane, Math.max(0, ent.z));
 
-        // Draw Entity
         if (ent.type === 'coin') {
           const r = 15 * p.scale;
           ctx.beginPath();
@@ -520,8 +565,8 @@ export default function App() {
           ctx.textAlign = 'center';
           ctx.fillText('৳', p.x, p.y - r - 4 * p.scale);
         } else if (ent.type === 'obstacle') {
-          const w = 58 * p.scale;
-          const h = (ent.sub === 'books' ? 38 : 54) * p.scale;
+          const w = 62 * p.scale;
+          const h = (ent.sub === 'books' ? 40 : 56) * p.scale;
           ctx.fillStyle = ent.sub === 'books' ? '#ef4444' : '#78350f';
           ctx.fillRect(p.x - w / 2, p.y - h, w, h);
           ctx.strokeStyle = '#fff';
@@ -532,28 +577,23 @@ export default function App() {
           ctx.textAlign = 'center';
           ctx.fillText(ent.sub === 'books' ? '📚 বই' : '🪑 টেবিল', p.x, p.y - h / 2 + 4);
         } else if (ent.type === 'ambush') {
-          // Aunt / Uncle waiting on road!
-          const bw = 46 * p.scale;
-          const bh = 86 * p.scale;
-          // Body
+          const bw = 48 * p.scale;
+          const bh = 88 * p.scale;
           ctx.fillStyle = ent.chaser.color;
           ctx.beginPath();
           ctx.roundRect(p.x - bw / 2, p.y - bh, bw, bh * 0.72, 10);
           ctx.fill();
-          // Head
           ctx.beginPath();
           ctx.arc(p.x, p.y - bh - 14 * p.scale, 16 * p.scale, 0, Math.PI * 2);
           ctx.fillStyle = '#fed7aa';
           ctx.fill();
-          // Name + Weapon Tag
           ctx.fillStyle = ent.isParent ? '#dc2626' : '#1e1b4b';
-          ctx.fillRect(p.x - 42 * p.scale, p.y - bh - 48 * p.scale, 84 * p.scale, 20 * p.scale);
+          ctx.fillRect(p.x - 46 * p.scale, p.y - bh - 48 * p.scale, 92 * p.scale, 20 * p.scale);
           ctx.fillStyle = '#fff';
           ctx.font = `bold ${Math.max(9, Math.floor(11 * p.scale))}px sans-serif`;
           ctx.textAlign = 'center';
           ctx.fillText(`${ent.chaser.name} ${ent.chaser.weapon}`, p.x, p.y - bh - 34 * p.scale);
 
-          // Smart Radar Glass or Raisha Warning
           if ((g.buffs.radarGlass || g.char.id === 'raisha') && ent.z < 0.75 && ent.z > 0.25) {
             ctx.fillStyle = '#ef4444';
             ctx.font = `bold ${Math.max(12, Math.floor(16 * p.scale))}px sans-serif`;
@@ -561,7 +601,7 @@ export default function App() {
           }
         }
 
-        // --- COLLISION CHECK (Near Player z ~ 0.04) ---
+        // Collision
         if (ent.z <= 0.06 && ent.z >= -0.05) {
           const sameLane = Math.abs(ent.lane - g.visualLane) < 0.42;
 
@@ -575,7 +615,6 @@ export default function App() {
           }
 
           if (sameLane && (ent.type === 'obstacle' || ent.type === 'ambush')) {
-            // Can jump over books or slide under table or Easy small char slips under table
             const clearedJump = ent.type === 'obstacle' && ent.sub === 'books' && g.y > 28;
             const clearedHighJump = g.y > 68;
             const clearedSlide = ent.type === 'obstacle' && ent.sub === 'table' && (g.isSliding || g.char.tier === 'Easy');
@@ -583,26 +622,11 @@ export default function App() {
             if (!clearedJump && !clearedHighJump && !clearedSlide) {
               g.entities.splice(i, 1);
 
-              // Check protections
-              if (g.invincibleTimer > 0 || g.buffTimers.cloak > 0 || g.buffTimers.chocolate > 0) {
-                continue;
-              }
-              if (g.buffTimers.skateboard > 0) {
-                g.buffTimers.skateboard = 0;
-                g.invincibleTimer = 60;
-                sfx.stumble();
-                continue;
-              }
-              if (g.shield > 0) {
-                g.shield = 0;
-                g.invincibleTimer = 60;
-                sfx.stumble();
-                continue;
-              }
+              if (g.invincibleTimer > 0 || g.buffTimers.cloak > 0 || g.buffTimers.chocolate > 0) continue;
+              if (g.buffTimers.skateboard > 0) { g.buffTimers.skateboard = 0; g.invincibleTimer = 60; sfx.stumble(); continue; }
+              if (g.shield > 0) { g.shield = 0; g.invincibleTimer = 60; sfx.stumble(); continue; }
 
-              // Stumble vs Caught!
               if (ent.type === 'obstacle' && (g.chaserDist > 45 || g.char.id === 'tisha')) {
-                // Stumble! Chaser gets closer & shouts!
                 sfx.stumble();
                 g.chaserDist = Math.max(20, g.chaserDist - 45);
                 g.activeChaser = CHASERS[Math.floor(Math.random() * CHASERS.length)];
@@ -610,7 +634,6 @@ export default function App() {
                 g.dialogTimer = 130;
                 g.invincibleTimer = 45;
               } else {
-                // Caught by Ambush or Chaser! Check Save Me (Fake Notebook)
                 if (g.saveMe > 0) {
                   g.saveMe = 0;
                   g.invincibleTimer = 90;
@@ -619,8 +642,6 @@ export default function App() {
                   sfx.powerup();
                   continue;
                 }
-
-                // GAME OVER!
                 g.running = false;
                 sfx.stopBgm();
                 sfx.gameover();
@@ -635,59 +656,47 @@ export default function App() {
             }
           }
         }
-
         if (ent.z < -0.1) g.entities.splice(i, 1);
       }
 
-      // --- DRAW PLAYER CHARACTER ---
+      // --- DRAW REAL SPRITE CHARACTER ON ROAD ---
       const playerProj = project(g.visualLane, 0.02);
       const px = playerProj.x;
       const py = playerProj.y - g.y * 1.6;
-      const cScale = g.char.heightScale * (g.isSliding ? 0.55 : 1);
-      const pw = (g.char.slim ? 30 : 40);
-      const ph = 78 * cScale;
-      const bob = g.isJumping ? 0 : Math.sin(g.frame * 0.35) * 4;
+      const sheetCanvas = sheets[g.char.sheet];
 
       // Shadow
-      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.fillStyle = 'rgba(0,0,0,0.32)';
       ctx.beginPath();
-      ctx.ellipse(px, playerProj.y + 4, 22, 8, 0, 0, Math.PI * 2);
+      ctx.ellipse(px, playerProj.y + 4, 28, 9, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Skateboard visual
-      if (g.buffTimers.skateboard > 0) {
-        ctx.fillStyle = '#38bdf8';
-        ctx.fillRect(px - 26, py - 4, 52, 8);
-      }
-
-      // Cloak transparency
       ctx.globalAlpha = g.buffTimers.cloak > 0 ? 0.45 : 1;
 
-      // Body
-      ctx.fillStyle = g.char.color;
-      ctx.beginPath();
-      ctx.roundRect(px - pw / 2, py - ph + bob, pw, ph * 0.7, 10);
-      ctx.fill();
+      if (sheetCanvas) {
+        const isPowerActive = g.isJumping || g.buffTimers.skateboard > 0 || g.buffTimers.chocolate > 0 || g.shield > 0;
+        const poseKey = isPowerActive ? 'power' : (Math.floor(g.frame / 7) % 2 === 0 ? 'run' : 'stand');
+        const [nx, ny, nw, nh] = g.char.crops[poseKey];
+        const sx = nx * sheetCanvas.width;
+        const sy = ny * sheetCanvas.height;
+        const sw = nw * sheetCanvas.width;
+        const sh = nh * sheetCanvas.height;
 
-      // Head
-      ctx.beginPath();
-      ctx.arc(px, py - ph - 13 + bob, 15, 0, Math.PI * 2);
-      ctx.fillStyle = '#fde68a';
-      ctx.fill();
+        const drawH = 128 * g.char.heightScale * (g.isSliding ? 0.58 : 1);
+        const drawW = drawH * (sw / sh);
+        const bob = g.isJumping ? 0 : Math.sin(g.frame * 0.4) * 4;
 
-      // Siam's Yellow Sunglasses
-      if (g.char.glasses) {
-        ctx.fillStyle = '#facc15';
-        ctx.fillRect(px - 11, py - ph - 17 + bob, 9, 5);
-        ctx.fillRect(px + 2, py - ph - 17 + bob, 9, 5);
+        ctx.drawImage(sheetCanvas, sx, sy, sw, sh, px - drawW / 2, py - drawH + bob, drawW, drawH);
+      } else {
+        ctx.fillStyle = g.char.color;
+        ctx.fillRect(px - 20, py - 80, 40, 80);
       }
 
-      // Shield Aura
-      if (g.shield > 0 || g.char.id === 'siam') {
+      if (g.shield > 0) {
         ctx.strokeStyle = '#fbbf24';
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(px, py - ph / 2, 42, 0, Math.PI * 2);
+        ctx.arc(px, py - 55, 52, 0, Math.PI * 2);
         ctx.stroke();
       }
       ctx.globalAlpha = 1;
@@ -703,7 +712,7 @@ export default function App() {
         ctx.arc(px, chaserY - 88, 16, 0, Math.PI * 2);
         ctx.fillStyle = '#fed7aa';
         ctx.fill();
-        ctx.font = '20px sans-serif';
+        ctx.font = '22px sans-serif';
         ctx.fillText(g.activeChaser.weapon.split(' ')[1] || '🧹', px + 26, chaserY - 60);
       }
 
@@ -723,7 +732,7 @@ export default function App() {
         ctx.fillText(`${g.activeChaser.name}: "${g.activeDialog}"`, W / 2, horizonY - 40);
       }
 
-      // --- HUD (SCORE & COINS) ---
+      // --- HUD ---
       ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
       ctx.beginPath();
       ctx.roundRect(14, 14, 150, 54, 14);
@@ -747,20 +756,18 @@ export default function App() {
       canvas.removeEventListener('touchstart', onTouchStart);
       canvas.removeEventListener('touchend', onTouchEnd);
     };
-  }, [screen, highScore]);
+  }, [screen, highScore, sheets]);
 
   const currentChar = CHARACTERS.find(c => c.id === selectedCharId) || CHARACTERS[0];
 
   return (
     <div className="relative w-screen h-screen bg-gradient-to-b from-indigo-950 via-purple-900 to-slate-900 flex flex-col items-center justify-between overflow-hidden font-sans">
-      {/* Toast Notification */}
       {toast && (
         <div className="fixed top-4 z-50 bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-full shadow-xl animate-bounce text-sm">
           {toast}
         </div>
       )}
 
-      {/* Top Bar (Hidden while playing) */}
       {screen !== 'playing' && (
         <div className="w-full max-w-md flex items-center justify-between p-4 z-10">
           <div className="flex items-center gap-2 bg-slate-900/80 border border-amber-400/40 px-3.5 py-1.5 rounded-full">
@@ -779,7 +786,7 @@ export default function App() {
 
       {/* --- MAIN MENU --- */}
       {screen === 'menu' && (
-        <div className="flex-1 w-full max-w-md flex flex-col items-center justify-center px-6 text-center gap-5">
+        <div className="flex-1 w-full max-w-md flex flex-col items-center justify-center px-6 text-center gap-4">
           <div>
             <span className="bg-amber-400/20 text-amber-300 text-xs font-bold px-3 py-1 rounded-full border border-amber-400/30">
               ফ্যামিলি এন্ডলেস রানার
@@ -790,27 +797,26 @@ export default function App() {
             <p className="text-xs text-slate-300 mt-1">বাবা-মা ও আঙ্কেল-আন্টির হাত থেকে পালিয়ে দৌড়াও!</p>
           </div>
 
-          {/* Selected Character Card */}
-          <div className="w-full bg-slate-900/80 border-2 border-amber-400/50 rounded-3xl p-5 shadow-2xl">
-            <div className="flex items-center justify-between mb-2">
+          <div className="w-full bg-slate-900/85 border-2 border-amber-400/50 rounded-3xl p-4 shadow-2xl">
+            <div className="flex items-center justify-between mb-1">
               <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
                 currentChar.tier === 'Easy' ? 'bg-emerald-500/20 text-emerald-300' :
                 currentChar.tier === 'Medium' ? 'bg-sky-500/20 text-sky-300' : 'bg-rose-500/20 text-rose-300'
               }`}>
                 {currentChar.tier} Mode
               </span>
-              <span className="text-xs text-slate-400">সিলেক্টেড রানার</span>
+              <button onClick={() => setScreen('bible')} className="text-xs text-amber-300 underline flex items-center gap-1">
+                <BookOpen className="w-3.5 h-3.5" /> Character Bible
+              </button>
             </div>
 
-            <div className="w-20 h-20 mx-auto my-2 rounded-2xl flex items-center justify-center text-3xl font-black shadow-inner border-2 border-white/20"
-                 style={{ backgroundColor: currentChar.color }}>
-              {currentChar.name[0]}
+            <div className="flex justify-center my-1">
+              <SpritePortrait char={currentChar} pose="power" sheets={sheets} className="w-28 h-28 object-contain" />
             </div>
             <h2 className="text-2xl font-extrabold text-white">{currentChar.name}</h2>
-            <p className="text-xs text-amber-300 mt-1">{currentChar.trait}</p>
+            <p className="text-xs text-amber-300 mt-0.5">{currentChar.trait}</p>
 
-            {/* Equipped Items Preview */}
-            <div className="mt-3 pt-3 border-t border-white/10 flex flex-wrap justify-center gap-1.5">
+            <div className="mt-3 pt-2.5 border-t border-white/10 flex flex-wrap justify-center gap-1.5">
               {Object.entries(inventory).filter(([, count]) => count > 0).length === 0 ? (
                 <span className="text-[11px] text-slate-400">কোনো পাওয়ার কেনা নেই (শপ থেকে কিনুন)</span>
               ) : (
@@ -826,7 +832,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Action Buttons */}
           <button
             onClick={startGame}
             className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xl shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 active:scale-95 transition"
@@ -851,6 +856,21 @@ export default function App() {
         </div>
       )}
 
+      {/* --- CHARACTER BIBLE POSTER VIEW --- */}
+      {screen === 'bible' && (
+        <div className="flex-1 w-full max-w-md flex flex-col px-4 pb-4 overflow-hidden">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-black text-amber-300">Character Bible</h2>
+            <button onClick={() => setScreen('menu')} className="px-3 py-1.5 bg-slate-800 rounded-xl text-xs font-bold flex items-center gap-1">
+              <Home className="w-4 h-4" /> হোম
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto rounded-2xl border border-amber-400/30 bg-slate-950 p-2">
+            <img src="/bible.jfif" alt="Character Bible" className="w-full rounded-xl" />
+          </div>
+        </div>
+      )}
+
       {/* --- CHARACTER SELECTION --- */}
       {screen === 'chars' && (
         <div className="flex-1 w-full max-w-md flex flex-col px-4 pb-4 overflow-hidden">
@@ -869,14 +889,13 @@ export default function App() {
                 <div
                   key={char.id}
                   onClick={() => handleBuyCharacter(char)}
-                  className={`p-3.5 rounded-2xl border-2 flex items-center justify-between cursor-pointer transition ${
-                    isSelected ? 'bg-indigo-900/80 border-amber-400' : 'bg-slate-900/80 border-white/10'
+                  className={`p-3 rounded-2xl border-2 flex items-center justify-between cursor-pointer transition ${
+                    isSelected ? 'bg-indigo-900/85 border-amber-400' : 'bg-slate-900/85 border-white/10'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl border border-white/20"
-                         style={{ backgroundColor: char.color }}>
-                      {char.name[0]}
+                    <div className="w-16 h-16 rounded-2xl bg-slate-800/90 flex items-center justify-center border border-white/15 overflow-hidden shrink-0">
+                      <SpritePortrait char={char} pose={isSelected ? 'power' : 'stand'} sheets={sheets} className="w-16 h-16" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
@@ -961,7 +980,6 @@ export default function App() {
       {screen === 'playing' && (
         <div className="relative w-full h-full">
           <canvas ref={canvasRef} className="block w-full h-full touch-none" />
-          {/* Active Power Icons */}
           {activePowersUI.length > 0 && (
             <div className="fixed top-4 right-4 flex gap-1.5 bg-slate-900/75 px-3 py-1.5 rounded-full border border-amber-400/40">
               {activePowersUI.map((ic, idx) => <span key={idx} className="text-base">{ic}</span>)}
