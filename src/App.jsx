@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, ShoppingBag, Users, Volume2, VolumeX, Coins, Award, RotateCcw, Home, BookOpen } from 'lucide-react';
+import { Play, ShoppingBag, Users, Volume2, VolumeX, Coins, Award, RotateCcw, Home, BookOpen, Pause } from 'lucide-react';
 
 // --- SOUND ENGINE (Web Audio API) ---
 class SoundEngine {
@@ -63,7 +63,7 @@ class SoundEngine {
 }
 const sfx = new SoundEngine();
 
-// --- SPRITE CROP COORDINATES (Normalized 0.0 to 1.0 on sheet1, sheet2, sheet3) ---
+// --- SPRITE CROP COORDINATES ---
 const CHARACTERS = [
   {
     id: 'labiba', name: 'লাবিবা', tier: 'Easy', price: 0, color: '#92400e', heightScale: 0.78,
@@ -145,17 +145,16 @@ const SHOP_ITEMS = [
 ];
 
 const CHASERS = [
-  { id: 'shahin', name: 'শাহিন', weapon: 'ঝাড়ু 🧹', color: '#be185d', dialog: 'হারামজাদা! সিমন প্রিয় ছেলে, বাকিরা পড়তে বস!' },
-  { id: 'selim', name: 'সেলিম', weapon: 'অংক বই 📘', color: '#1d4ed8', dialog: 'জিল্লু কই? আজকে নামতা না ধরে ছাড়ছি না!' },
-  { id: 'nargis', name: 'নারগিস', weapon: 'খুন্তি 🍳', color: '#047857', dialog: 'কই যাস? পড়ার টেবিলে বসবি নাকি দেবো!' },
-  { id: 'swapan', name: 'স্বপন', weapon: 'ছাতা ☂️', color: '#4338ca', dialog: 'জয় বাংলা! আজকে সব কয়টাকে পড়তে বসাবো!' },
-  { id: 'rupali', name: 'রুপালি', weapon: 'স্কেল 📏', color: '#b45309', dialog: 'আলিফ-আয়াত, তোদের সবার আজকে খবর আছে!' },
-  { id: 'mamun', name: 'মামুন', weapon: 'বেত 🪄', color: '#374151', dialog: 'সবাইকে ধরে আজকে পড়ার টেবিলে বসাবো!' },
-  { id: 'masud', name: 'মাসুদ', weapon: 'জুতা 👞', color: '#7c2d12', dialog: 'লুকিয়ে লাভ নেই, সব কয়টাকে দেখে ফেলেছি!' },
-  { id: 'rokhsana', name: 'রোখসানা', weapon: 'বেলন 🥖', color: '#6d28d9', dialog: 'পড়া শেষ না করলে আজকে কারো টিফিন নেই!' },
+  { id: 'shahin', name: 'শাহিন', weapon: 'ঝাড়ু', emoji: '🧹', color: '#be185d', gender: 'f', glasses: true, dialog: 'হারামজাদা! সিমন প্রিয় ছেলে, বাকিরা পড়তে বস!' },
+  { id: 'selim', name: 'সেলিম', weapon: 'অংক বই', emoji: '📘', color: '#1d4ed8', gender: 'm', glasses: true, dialog: 'জিল্লু কই? আজকে নামতা না ধরে ছাড়ছি না!' },
+  { id: 'nargis', name: 'নারগিস', weapon: 'খুন্তি', emoji: '🍳', color: '#047857', gender: 'f', glasses: false, dialog: 'কই যাস? পড়ার টেবিলে বসবি নাকি দেবো!' },
+  { id: 'swapan', name: 'স্বপন', weapon: 'ছাতা', emoji: '☂️', color: '#4338ca', gender: 'm', glasses: false, dialog: 'জয় বাংলা! আজকে সব কয়টাকে পড়তে বসাবো!' },
+  { id: 'rupali', name: 'রুপালি', weapon: 'স্কেল', emoji: '📏', color: '#b45309', gender: 'f', glasses: false, dialog: 'আলিফ-আয়াত, তোদের সবার আজকে খবর আছে!' },
+  { id: 'mamun', name: 'মামুন', weapon: 'বেত', emoji: '🪄', color: '#374151', gender: 'm', glasses: false, dialog: 'সবাইকে ধরে আজকে পড়ার টেবিলে বসাবো!' },
+  { id: 'masud', name: 'মাসুদ', weapon: 'জুতা', emoji: '👞', color: '#7c2d12', gender: 'm', glasses: true, dialog: 'লুকিয়ে লাভ নেই, সব কয়টাকে দেখে ফেলেছি!' },
+  { id: 'rokhsana', name: 'রোখসানা', weapon: 'বেলন', emoji: '🥖', color: '#6d28d9', gender: 'f', glasses: false, dialog: 'পড়া শেষ না করলে আজকে কারো টিফিন নেই!' },
 ];
 
-// --- HELPER: Remove checkerboard background & prepare sprite sheet ---
 function processSpriteSheet(src) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -173,15 +172,12 @@ function processSpriteSheet(src) {
           const r = d[i], g = d[i + 1], b = d[i + 2];
           const max = Math.max(r, g, b);
           const min = Math.min(r, g, b);
-          // Remove gray/white checkerboard background pixels
           if (max - min < 16 && min > 125 && max < 248) {
             d[i + 3] = 0;
           }
         }
         ctx.putImageData(imgData, 0, 0);
-      } catch (e) {
-        // Fallback if canvas pixel read is blocked
-      }
+      } catch (e) {}
       resolve(c);
     };
     img.onerror = () => resolve(null);
@@ -189,7 +185,6 @@ function processSpriteSheet(src) {
   });
 }
 
-// --- SPRITE PREVIEW COMPONENT FOR UI CARDS ---
 function SpritePortrait({ char, pose = 'stand', sheets, className = 'w-16 h-16' }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -213,6 +208,228 @@ function SpritePortrait({ char, pose = 'stand', sheets, className = 'w-16 h-16' 
   return <canvas ref={ref} width={140} height={140} className={className} />;
 }
 
+// --- 3D CARTOON CHASER RENDERER ---
+function drawDetailedChaser(ctx, x, y, scale, chaser, frame, isParent = false, showTag = true) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(scale, scale);
+
+  const bob = Math.sin(frame * 0.35) * 4;
+  const legSwing = Math.sin(frame * 0.35) * 11;
+
+  // Ground Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.beginPath();
+  ctx.ellipse(0, 2, 28, 9, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Shoes & Legs
+  ctx.fillStyle = '#0f172a';
+  ctx.beginPath();
+  ctx.roundRect(-15, -30 + legSwing * 0.45, 11, 30, 5);
+  ctx.roundRect(4, -30 - legSwing * 0.45, 11, 30, 5);
+  ctx.fill();
+
+  // 3D Shaded Torso
+  const bodyGrad = ctx.createLinearGradient(-24, -82, 24, -28);
+  bodyGrad.addColorStop(0, chaser.color);
+  bodyGrad.addColorStop(1, '#0f172a');
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.roundRect(-24, -82 + bob, 48, 56, 14);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Collar / Scarf Detail
+  ctx.fillStyle = '#fef3c7';
+  ctx.beginPath();
+  ctx.moveTo(-10, -82 + bob);
+  ctx.lineTo(0, -62 + bob);
+  ctx.lineTo(10, -82 + bob);
+  ctx.fill();
+
+  // Left Arm
+  ctx.fillStyle = '#fed7aa';
+  ctx.beginPath();
+  ctx.roundRect(-32, -76 + bob - legSwing * 0.3, 9, 30, 5);
+  ctx.fill();
+
+  // Right Arm + Animated Weapon
+  ctx.save();
+  ctx.translate(26, -74 + bob);
+  ctx.rotate(Math.sin(frame * 0.25) * 0.3 - 0.35);
+  ctx.fillStyle = '#fed7aa';
+  ctx.beginPath();
+  ctx.roundRect(-4, 0, 9, 28, 5);
+  ctx.fill();
+  ctx.font = '30px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(chaser.emoji, 5, 6);
+  ctx.restore();
+
+  // Head
+  ctx.fillStyle = '#fed7aa';
+  ctx.beginPath();
+  ctx.arc(0, -100 + bob, 19, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Hair / Bun
+  ctx.fillStyle = '#111827';
+  ctx.beginPath();
+  ctx.arc(0, -104 + bob, 19.5, Math.PI, Math.PI * 2);
+  ctx.fill();
+  if (chaser.gender === 'f') {
+    ctx.beginPath();
+    ctx.arc(0, -119 + bob, 9, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Angry Eyebrows & Eyes
+  ctx.strokeStyle = '#111827';
+  ctx.lineWidth = 2.8;
+  ctx.beginPath();
+  ctx.moveTo(-11, -105 + bob);
+  ctx.lineTo(-3, -101 + bob);
+  ctx.moveTo(11, -105 + bob);
+  ctx.lineTo(3, -101 + bob);
+  ctx.stroke();
+
+  ctx.fillStyle = '#111827';
+  ctx.beginPath();
+  ctx.arc(-6, -98 + bob, 2.5, 0, Math.PI * 2);
+  ctx.arc(6, -98 + bob, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (chaser.glasses) {
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 1.8;
+    ctx.strokeRect(-12, -102 + bob, 10, 7);
+    ctx.strokeRect(2, -102 + bob, 10, 7);
+  }
+
+  // Shouting Mouth
+  ctx.fillStyle = '#991b1b';
+  ctx.beginPath();
+  ctx.arc(0, -90 + bob, 4.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // High-Contrast Nameplate
+  if (showTag) {
+    const label = `${chaser.name} • ${chaser.weapon}`;
+    ctx.font = 'bold 13px sans-serif';
+    const textW = ctx.measureText(label).width;
+    const pillW = Math.max(96, textW + 22);
+    const pillH = 26;
+    const pillY = -152 + bob;
+
+    ctx.fillStyle = isParent ? '#dc2626' : '#1e1b4b';
+    ctx.beginPath();
+    ctx.roundRect(-pillW / 2, pillY, pillW, pillH, 13);
+    ctx.fill();
+    ctx.strokeStyle = '#facc15';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, 0, pillY + pillH / 2 + 1);
+  }
+
+  ctx.restore();
+}
+
+// --- 3D ISOMETRIC OBSTACLE RENDERER ---
+function draw3DObstacle(ctx, x, y, scale, sub) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(scale, scale);
+
+  // Ground shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.beginPath();
+  ctx.ellipse(0, 2, 42, 10, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (sub === 'books') {
+    // 3D Stacked Textbooks with Top Face & Pages
+    const books = [
+      { color: '#dc2626', top: '#f87171', h: 15, w: 74 },
+      { color: '#2563eb', top: '#60a5fa', h: 15, w: 68 },
+      { color: '#059669', top: '#34d399', h: 14, w: 62 },
+    ];
+    let curY = 0;
+    books.forEach((b) => {
+      // Front Spine
+      ctx.fillStyle = b.color;
+      ctx.fillRect(-b.w / 2, curY - b.h, b.w, b.h);
+      // White Pages Strip
+      ctx.fillStyle = '#fef9c3';
+      ctx.fillRect(-b.w / 2 + 5, curY - b.h + 3, b.w - 10, b.h - 6);
+      // 3D Top Face
+      ctx.fillStyle = b.top;
+      ctx.beginPath();
+      ctx.moveTo(-b.w / 2, curY - b.h);
+      ctx.lineTo(-b.w / 2 + 10, curY - b.h - 9);
+      ctx.lineTo(b.w / 2 + 10, curY - b.h - 9);
+      ctx.lineTo(b.w / 2, curY - b.h);
+      ctx.closePath();
+      ctx.fill();
+      curY -= b.h;
+    });
+
+    // Clear Badge
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath();
+    ctx.roundRect(-38, curY - 30, 76, 20, 10);
+    ctx.fill();
+    ctx.fillStyle = '#facc15';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('⬆️ জাম্প করো', 0, curY - 16);
+  } else {
+    // 3D High Study Table (Slide Under!)
+    const w = 80;
+    const h = 64;
+    // Back Legs
+    ctx.fillStyle = '#451a03';
+    ctx.fillRect(-w / 2 + 12, -h, 8, h - 4);
+    ctx.fillRect(w / 2 - 20, -h, 8, h - 4);
+    // Front Legs
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(-w / 2 + 4, -h + 6, 9, h - 6);
+    ctx.fillRect(w / 2 - 13, -h + 6, 9, h - 6);
+
+    // Table Top (3D Perspective)
+    ctx.fillStyle = '#b45309';
+    ctx.beginPath();
+    ctx.moveTo(-w / 2 - 4, -h + 6);
+    ctx.lineTo(-w / 2 + 12, -h - 8);
+    ctx.lineTo(w / 2 + 12, -h - 8);
+    ctx.lineTo(w / 2 + 4, -h + 6);
+    ctx.closePath();
+    ctx.fill();
+
+    // Table Front Edge
+    ctx.fillStyle = '#92400e';
+    ctx.fillRect(-w / 2 - 4, -h + 6, w + 8, 10);
+
+    // Clear Slide Badge
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath();
+    ctx.roundRect(-40, -h - 32, 80, 20, 10);
+    ctx.fill();
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('⬇️ স্লাইড করো', 0, -h - 18);
+  }
+
+  ctx.restore();
+}
+
 export default function App() {
   const [coins, setCoins] = useState(() => Number(localStorage.getItem('pe_coins') || 20));
   const [highScore, setHighScore] = useState(() => Number(localStorage.getItem('pe_highscore') || 0));
@@ -227,7 +444,8 @@ export default function App() {
   });
 
   const [sheets, setSheets] = useState({});
-  const [screen, setScreen] = useState('menu'); // menu, chars, shop, bible, playing, gameover
+  const [screen, setScreen] = useState('menu');
+  const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(false);
   const [toast, setToast] = useState('');
   const [lastRunStats, setLastRunStats] = useState({ score: 0, coinsEarned: 0, caughtBy: null });
@@ -235,6 +453,9 @@ export default function App() {
 
   const canvasRef = useRef(null);
   const gameStateRef = useRef(null);
+  const pausedRef = useRef(false);
+
+  useEffect(() => { pausedRef.current = paused; }, [paused]);
 
   useEffect(() => {
     Promise.all([
@@ -267,7 +488,14 @@ export default function App() {
     setMuted(next);
     sfx.muted = next;
     if (next) sfx.stopBgm();
-    else if (screen === 'playing') sfx.startBgm();
+    else if (screen === 'playing' && !paused) sfx.startBgm();
+  };
+
+  const togglePause = () => {
+    const next = !paused;
+    setPaused(next);
+    if (next) sfx.stopBgm();
+    else if (!muted) sfx.startBgm();
   };
 
   const handleBuyCharacter = (char) => {
@@ -317,6 +545,7 @@ export default function App() {
   const startGame = () => {
     sfx.init();
     sfx.startBgm();
+    setPaused(false);
     const char = CHARACTERS.find(c => c.id === selectedCharId) || CHARACTERS[0];
 
     const activeBuffs = {};
@@ -329,7 +558,13 @@ export default function App() {
     });
     setInventory(nextInv);
 
-    const baseSpeed = char.tier === 'Easy' ? 7.2 : char.tier === 'Medium' ? 8.4 : 9.4;
+    // Balanced speeds so Hard mode is thrilling yet clearly visible
+    const baseSpeed = char.tier === 'Easy' ? 6.8 : char.tier === 'Medium' ? 7.8 : 8.6;
+
+    const scenery = [];
+    for (let i = 0; i < 12; i++) {
+      scenery.push({ z: i * 0.085, side: i % 2 === 0 ? -1 : 1, kind: i % 3 === 0 ? 'house' : i % 2 === 0 ? 'lamp' : 'tree' });
+    }
 
     gameStateRef.current = {
       running: true,
@@ -341,16 +576,19 @@ export default function App() {
       isJumping: false,
       isSliding: false,
       slideTimer: 0,
-      speed: activeBuffs.chocolate ? baseSpeed + 4 : baseSpeed,
+      speed: activeBuffs.chocolate ? baseSpeed + 3.5 : baseSpeed,
       baseSpeed,
       distance: 0,
       runCoins: 0,
       entities: [],
+      particles: [],
+      scenery,
       spawnTimer: 0,
       chaserDist: activeBuffs.ninjaShoes ? 140 : 85,
       activeChaser: CHASERS[Math.floor(Math.random() * CHASERS.length)],
       activeDialog: '',
       dialogTimer: 0,
+      shakeTimer: 0,
       buffs: activeBuffs,
       buffTimers: {
         skateboard: activeBuffs.skateboard ? 900 : 0,
@@ -385,14 +623,32 @@ export default function App() {
     resize();
     window.addEventListener('resize', resize);
 
+    const spawnParticles = (x, y, color, count = 12) => {
+      const g = gameStateRef.current;
+      if (!g) return;
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
+        const speed = 2 + Math.random() * 5;
+        g.particles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 2,
+          life: 24 + Math.random() * 10,
+          maxLife: 34,
+          color,
+          size: 3 + Math.random() * 4
+        });
+      }
+    };
+
     let touchStartX = 0;
     let touchStartY = 0;
 
-    const doLeft = () => { const g = gameStateRef.current; if (g && g.lane > 0) { g.lane--; sfx.slide(); } };
-    const doRight = () => { const g = gameStateRef.current; if (g && g.lane < 2) { g.lane++; sfx.slide(); } };
+    const doLeft = () => { const g = gameStateRef.current; if (g && !pausedRef.current && g.lane > 0) { g.lane--; sfx.slide(); } };
+    const doRight = () => { const g = gameStateRef.current; if (g && !pausedRef.current && g.lane < 2) { g.lane++; sfx.slide(); } };
     const doJump = () => {
       const g = gameStateRef.current;
-      if (!g || g.isJumping) return;
+      if (!g || pausedRef.current || g.isJumping) return;
       g.isJumping = true;
       g.isSliding = false;
       g.vy = g.buffs.sneakers || g.char.id === 'simon' ? 17.5 : 14.5;
@@ -400,7 +656,7 @@ export default function App() {
     };
     const doSlide = () => {
       const g = gameStateRef.current;
-      if (!g) return;
+      if (!g || pausedRef.current) return;
       if (g.isJumping) g.vy = -14;
       g.isSliding = true;
       g.slideTimer = 32;
@@ -408,6 +664,7 @@ export default function App() {
     };
 
     const onKeyDown = (e) => {
+      if (e.key === 'Escape' || e.key === 'p') { togglePause(); return; }
       if (e.key === 'ArrowLeft' || e.key === 'a') doLeft();
       if (e.key === 'ArrowRight' || e.key === 'd') doRight();
       if (e.key === 'ArrowUp' || e.key === 'w' || e.key === ' ') doJump();
@@ -434,24 +691,32 @@ export default function App() {
     const loop = () => {
       const g = gameStateRef.current;
       if (!g || !g.running) return;
+
+      if (pausedRef.current) {
+        animId = requestAnimationFrame(loop);
+        return;
+      }
+
       g.frame++;
 
       const W = canvas.width;
       const H = canvas.height;
-      const horizonY = H * 0.32;
-      const groundY = H * 0.85;
+      // High Camera Angle (horizonY = 0.21) so far road & obstacles are super clear even in Hard mode!
+      const horizonY = H * 0.21;
+      const groundY = H * 0.87;
 
       Object.keys(g.buffTimers).forEach(k => { if (g.buffTimers[k] > 0) g.buffTimers[k]--; });
       if (g.invincibleTimer > 0) g.invincibleTimer--;
       if (g.dialogTimer > 0) g.dialogTimer--;
+      if (g.shakeTimer > 0) g.shakeTimer--;
 
-      const currentSpeed = g.buffTimers.chocolate > 0 ? g.baseSpeed + 5 : g.buffTimers.skateboard > 0 ? g.baseSpeed + 2.5 : g.baseSpeed + Math.min(4, g.distance / 2500);
+      const currentSpeed = g.buffTimers.chocolate > 0 ? g.baseSpeed + 4.2 : g.buffTimers.skateboard > 0 ? g.baseSpeed + 2.2 : g.baseSpeed + Math.min(3.2, g.distance / 3000);
       g.distance += currentSpeed * 0.15;
 
       const chaserRecovery = g.buffTimers.watch > 0 ? 0.02 : 0.08;
       if (g.chaserDist < 110) g.chaserDist += chaserRecovery;
 
-      g.visualLane += (g.lane - g.visualLane) * 0.22;
+      g.visualLane += (g.lane - g.visualLane) * 0.24;
       if (g.isJumping) {
         g.y += g.vy;
         const gravity = (g.buffs.glider || g.char.id === 'alif') && g.vy < 0 ? 0.42 : 0.72;
@@ -463,22 +728,22 @@ export default function App() {
         if (g.slideTimer <= 0) g.isSliding = false;
       }
 
-      // Spawn Entities
+      // Proportional Spawn Spacing (prevents overcrowding in Hard mode!)
       g.spawnTimer -= currentSpeed;
       if (g.spawnTimer <= 0) {
-        g.spawnTimer = 155;
+        g.spawnTimer = 140 + currentSpeed * 6;
         const lane = Math.floor(Math.random() * 3);
         const roll = Math.random();
 
-        if (roll < 0.48) {
-          for (let i = 0; i < 4; i++) g.entities.push({ type: 'coin', lane, z: 1.0 + i * 0.07 });
-        } else if (roll < 0.76) {
+        if (roll < 0.46) {
+          for (let i = 0; i < 4; i++) g.entities.push({ type: 'coin', lane, z: 1.0 + i * 0.065 });
+        } else if (roll < 0.74) {
           const ambusher = CHASERS[Math.floor(Math.random() * CHASERS.length)];
           const isParent = g.char.parents.includes(ambusher.id);
           g.entities.push({ type: 'ambush', lane, z: 1.0, chaser: ambusher, isParent });
           const safeLane = (lane + 1) % 3;
           g.entities.push({ type: 'coin', lane: safeLane, z: 1.0 });
-          g.entities.push({ type: 'coin', lane: safeLane, z: 1.08 });
+          g.entities.push({ type: 'coin', lane: safeLane, z: 1.07 });
         } else {
           const sub = Math.random() < 0.5 ? 'books' : 'table';
           g.entities.push({ type: 'obstacle', sub, lane, z: 1.0 });
@@ -487,57 +752,169 @@ export default function App() {
         }
       }
 
+      // Improved Linear-Perspective Projection for Maximum Forward Visibility
       const project = (laneIdx, z) => {
         const progress = 1 - z;
-        const scale = 0.22 + progress * 0.95;
-        const y = horizonY + Math.pow(progress, 1.35) * (groundY - horizonY);
-        const roadHalfW = (W * 0.09) + Math.pow(progress, 1.25) * (W * 0.36);
+        const scale = 0.26 + progress * 0.92;
+        const y = horizonY + Math.pow(progress, 1.15) * (groundY - horizonY);
+        const roadHalfW = (W * 0.11) + Math.pow(progress, 1.1) * (W * 0.36);
         const x = W / 2 + (laneIdx - 1) * (roadHalfW * 0.66);
         return { x, y, scale, roadHalfW };
       };
 
-      // --- DRAW ENVIRONMENT ---
-      const stage = g.distance < 350 ? 0 : g.distance < 850 ? 1 : 2;
-      const skyColors = [
-        ['#fef3c7', '#fde68a'],
-        ['#38bdf8', '#bae6fd'],
-        ['#fb923c', '#fed7aa'],
-      ];
-      const grad = ctx.createLinearGradient(0, 0, 0, horizonY);
-      grad.addColorStop(0, skyColors[stage][0]);
-      grad.addColorStop(1, skyColors[stage][1]);
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, W, horizonY);
-
-      ctx.fillStyle = stage === 0 ? '#d97706' : stage === 1 ? '#64748b' : '#16a34a';
-      ctx.fillRect(0, horizonY, W, H - horizonY);
-
-      ctx.beginPath();
-      ctx.moveTo(W / 2 - W * 0.09, horizonY);
-      ctx.lineTo(W / 2 + W * 0.09, horizonY);
-      ctx.lineTo(W / 2 + W * 0.45, H);
-      ctx.lineTo(W / 2 - W * 0.45, H);
-      ctx.closePath();
-      ctx.fillStyle = stage === 0 ? '#fef9c3' : stage === 1 ? '#475569' : '#334155';
-      ctx.fill();
-
-      ctx.strokeStyle = 'rgba(255,255,255,0.45)';
-      ctx.lineWidth = 3;
-      [-0.33, 0.33].forEach(offset => {
-        ctx.beginPath();
-        ctx.moveTo(W / 2 + W * 0.09 * offset, horizonY);
-        ctx.lineTo(W / 2 + W * 0.45 * offset, H);
-        ctx.stroke();
-      });
-
-      const stripeOffset = (g.frame * currentSpeed * 0.015) % 0.25;
-      for (let z = stripeOffset; z < 1; z += 0.25) {
-        const p = project(1, z);
-        ctx.fillStyle = 'rgba(0,0,0,0.06)';
-        ctx.fillRect(W / 2 - p.roadHalfW, p.y, p.roadHalfW * 2, 6 * p.scale);
+      ctx.save();
+      if (g.shakeTimer > 0) {
+        ctx.translate((Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10);
       }
 
-      // --- ENTITIES ---
+      // --- 1. VIBRANT SKY, CITY SILHOUETTE & CLOUDS ---
+      const stage = g.distance < 400 ? 0 : g.distance < 950 ? 1 : 2;
+      const skyPalettes = [
+        ['#0284c7', '#38bdf8', '#bae6fd'], // Crisp Morning Blue
+        ['#4f46e5', '#818cf8', '#e0e7ff'], // Royal Indigo Day
+        ['#c2410c', '#f97316', '#fde047'], // Golden Sunset
+      ];
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, horizonY);
+      skyGrad.addColorStop(0, skyPalettes[stage][0]);
+      skyGrad.addColorStop(0.65, skyPalettes[stage][1]);
+      skyGrad.addColorStop(1, skyPalettes[stage][2]);
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, W, horizonY);
+
+      // Glowing Sun
+      ctx.fillStyle = 'rgba(254, 240, 138, 0.35)';
+      ctx.beginPath();
+      ctx.arc(W * 0.82, horizonY * 0.42, 34, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fef9c3';
+      ctx.beginPath();
+      ctx.arc(W * 0.82, horizonY * 0.42, 20, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Moving Clouds
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.82)';
+      [0.15, 0.48, 0.82].forEach((cx, idx) => {
+        const cloudX = ((cx * W + g.frame * (0.25 + idx * 0.08)) % (W + 150)) - 75;
+        const cloudY = horizonY * (0.28 + (idx % 2) * 0.22);
+        ctx.beginPath();
+        ctx.arc(cloudX, cloudY, 16, 0, Math.PI * 2);
+        ctx.arc(cloudX + 15, cloudY - 4, 20, 0, Math.PI * 2);
+        ctx.arc(cloudX + 32, cloudY, 15, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Distant Dhaka / Town Skyline on Horizon
+      ctx.fillStyle = stage === 2 ? '#7c2d12' : '#1e293b';
+      for (let bx = 0; bx < W; bx += 42) {
+        const bh = 14 + ((bx * 17) % 24);
+        ctx.fillRect(bx, horizonY - bh, 36, bh);
+        // Tiny Lit Windows
+        ctx.fillStyle = '#facc15';
+        if (bx % 84 === 0) ctx.fillRect(bx + 8, horizonY - bh + 5, 5, 5);
+        ctx.fillStyle = stage === 2 ? '#7c2d12' : '#1e293b';
+      }
+
+      // --- 2. GRASS GROUND & 3-TRACK RAILWAY / BRICK ROAD ---
+      const grassGrad = ctx.createLinearGradient(0, horizonY, 0, H);
+      grassGrad.addColorStop(0, stage === 2 ? '#a16207' : '#16a34a');
+      grassGrad.addColorStop(1, stage === 2 ? '#422006' : '#14532d');
+      ctx.fillStyle = grassGrad;
+      ctx.fillRect(0, horizonY, W, H - horizonY);
+
+      // Brick Sidewalks / Curbs
+      ctx.beginPath();
+      ctx.moveTo(W / 2 - W * 0.122, horizonY);
+      ctx.lineTo(W / 2 + W * 0.122, horizonY);
+      ctx.lineTo(W / 2 + W * 0.50, H);
+      ctx.lineTo(W / 2 - W * 0.50, H);
+      ctx.closePath();
+      ctx.fillStyle = '#b91c1c';
+      ctx.fill();
+
+      // Gravel Track Bed
+      const roadGrad = ctx.createLinearGradient(0, horizonY, 0, H);
+      roadGrad.addColorStop(0, '#475569');
+      roadGrad.addColorStop(1, '#1e293b');
+      ctx.beginPath();
+      ctx.moveTo(W / 2 - W * 0.11, horizonY);
+      ctx.lineTo(W / 2 + W * 0.11, horizonY);
+      ctx.lineTo(W / 2 + W * 0.47, H);
+      ctx.lineTo(W / 2 - W * 0.47, H);
+      ctx.closePath();
+      ctx.fillStyle = roadGrad;
+      ctx.fill();
+
+      // Animated Wooden Railway Sleepers across all 3 Lanes
+      const sleeperStep = 0.055;
+      const sleeperOffset = (g.frame * currentSpeed * 0.0022) % sleeperStep;
+      for (let z = 1 - sleeperOffset; z > 0; z -= sleeperStep) {
+        const p = project(1, z);
+        const sw = p.roadHalfW * 1.88;
+        const sh = Math.max(2, 6 * p.scale);
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(W / 2 - sw / 2, p.y - sh / 2, sw, sh);
+      }
+
+      // 6 Shiny Steel Rails (2 per Lane)
+      [-0.66, 0, 0.66].forEach(laneOffset => {
+        [-0.14, 0.14].forEach(railOffset => {
+          const topX = W / 2 + (W * 0.11) * (laneOffset + railOffset);
+          const botX = W / 2 + (W * 0.47) * (laneOffset + railOffset);
+          ctx.strokeStyle = '#cbd5e1';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(topX, horizonY);
+          ctx.lineTo(botX, H);
+          ctx.stroke();
+        });
+      });
+
+      // --- 3. MOVING ROADSIDE TREES, HOUSES & STREET LAMPS ---
+      g.scenery.forEach(item => {
+        item.z -= currentSpeed * 0.0022;
+        if (item.z < -0.05) {
+          item.z = 1.0;
+          const r = Math.random();
+          item.kind = r < 0.35 ? 'house' : r < 0.65 ? 'lamp' : 'tree';
+        }
+        const p = project(1, Math.max(0, item.z));
+        const sx = W / 2 + item.side * (p.roadHalfW + 52 * p.scale);
+        const sy = p.y;
+
+        if (item.kind === 'tree') {
+          ctx.fillStyle = '#78350f';
+          ctx.fillRect(sx - 5 * p.scale, sy - 38 * p.scale, 10 * p.scale, 38 * p.scale);
+          ctx.fillStyle = '#15803d';
+          ctx.beginPath();
+          ctx.arc(sx, sy - 52 * p.scale, 26 * p.scale, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#4ade80';
+          ctx.beginPath();
+          ctx.arc(sx - 7 * p.scale, sy - 58 * p.scale, 16 * p.scale, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (item.kind === 'lamp') {
+          ctx.fillStyle = '#334155';
+          ctx.fillRect(sx - 3 * p.scale, sy - 75 * p.scale, 6 * p.scale, 75 * p.scale);
+          ctx.fillStyle = '#fef08a';
+          ctx.beginPath();
+          ctx.arc(sx - item.side * 8 * p.scale, sy - 75 * p.scale, 7 * p.scale, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          const hw = 58 * p.scale;
+          const hh = 44 * p.scale;
+          ctx.fillStyle = '#fef3c7';
+          ctx.fillRect(sx - hw / 2, sy - hh, hw, hh);
+          ctx.fillStyle = '#dc2626';
+          ctx.beginPath();
+          ctx.moveTo(sx - hw * 0.62, sy - hh);
+          ctx.lineTo(sx, sy - hh - 26 * p.scale);
+          ctx.lineTo(sx + hw * 0.62, sy - hh);
+          ctx.closePath();
+          ctx.fill();
+        }
+      });
+
+      // --- 4. ENTITIES (COINS, 3D OBSTACLES, AMBUSH CHASERS) ---
       g.entities.sort((a, b) => b.z - a.z);
 
       for (let i = g.entities.length - 1; i >= 0; i--) {
@@ -545,63 +922,53 @@ export default function App() {
         ent.z -= currentSpeed * 0.0022;
 
         if (g.buffTimers.converter > 0 && (ent.type === 'obstacle' || ent.type === 'ambush')) ent.type = 'coin';
-        if (ent.type === 'coin' && (g.buffs.magnet || g.char.id === 'tanha') && ent.z < 0.45 && ent.z > 0) {
-          ent.lane += (g.visualLane - ent.lane) * 0.25;
+        if (ent.type === 'coin' && (g.buffs.magnet || g.char.id === 'tanha') && ent.z < 0.48 && ent.z > 0) {
+          ent.lane += (g.visualLane - ent.lane) * 0.26;
         }
 
         const p = project(ent.lane, Math.max(0, ent.z));
 
         if (ent.type === 'coin') {
-          const r = 15 * p.scale;
+          const r = 17 * p.scale;
+          const cy = p.y - r - 10 * p.scale + Math.sin(g.frame * 0.15 + i) * 3 * p.scale;
+          const spinWidth = Math.max(0.35, Math.abs(Math.cos(g.frame * 0.1 + i)));
+
+          ctx.fillStyle = 'rgba(250, 204, 21, 0.32)';
           ctx.beginPath();
-          ctx.arc(p.x, p.y - r - 8 * p.scale, r, 0, Math.PI * 2);
+          ctx.arc(p.x, cy, r * 1.4, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.save();
+          ctx.translate(p.x, cy);
+          ctx.scale(spinWidth, 1);
+          ctx.beginPath();
+          ctx.arc(0, 0, r, 0, Math.PI * 2);
           ctx.fillStyle = '#facc15';
           ctx.fill();
-          ctx.lineWidth = 2;
+          ctx.lineWidth = 2.5;
           ctx.strokeStyle = '#ca8a04';
           ctx.stroke();
-          ctx.fillStyle = '#854d0e';
-          ctx.font = `bold ${Math.max(9, Math.floor(13 * p.scale))}px sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.fillText('৳', p.x, p.y - r - 4 * p.scale);
-        } else if (ent.type === 'obstacle') {
-          const w = 62 * p.scale;
-          const h = (ent.sub === 'books' ? 40 : 56) * p.scale;
-          ctx.fillStyle = ent.sub === 'books' ? '#ef4444' : '#78350f';
-          ctx.fillRect(p.x - w / 2, p.y - h, w, h);
-          ctx.strokeStyle = '#fff';
-          ctx.lineWidth = 2;
-          ctx.strokeRect(p.x - w / 2, p.y - h, w, h);
-          ctx.fillStyle = '#fff';
-          ctx.font = `bold ${Math.max(10, Math.floor(12 * p.scale))}px sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.fillText(ent.sub === 'books' ? '📚 বই' : '🪑 টেবিল', p.x, p.y - h / 2 + 4);
-        } else if (ent.type === 'ambush') {
-          const bw = 48 * p.scale;
-          const bh = 88 * p.scale;
-          ctx.fillStyle = ent.chaser.color;
-          ctx.beginPath();
-          ctx.roundRect(p.x - bw / 2, p.y - bh, bw, bh * 0.72, 10);
-          ctx.fill();
-          ctx.beginPath();
-          ctx.arc(p.x, p.y - bh - 14 * p.scale, 16 * p.scale, 0, Math.PI * 2);
-          ctx.fillStyle = '#fed7aa';
-          ctx.fill();
-          ctx.fillStyle = ent.isParent ? '#dc2626' : '#1e1b4b';
-          ctx.fillRect(p.x - 46 * p.scale, p.y - bh - 48 * p.scale, 92 * p.scale, 20 * p.scale);
-          ctx.fillStyle = '#fff';
-          ctx.font = `bold ${Math.max(9, Math.floor(11 * p.scale))}px sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.fillText(`${ent.chaser.name} ${ent.chaser.weapon}`, p.x, p.y - bh - 34 * p.scale);
 
-          if ((g.buffs.radarGlass || g.char.id === 'raisha') && ent.z < 0.75 && ent.z > 0.25) {
+          ctx.fillStyle = '#854d0e';
+          ctx.font = `bold ${Math.max(10, Math.floor(15 * p.scale))}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('৳', 0, 1);
+          ctx.restore();
+        } else if (ent.type === 'obstacle') {
+          draw3DObstacle(ctx, p.x, p.y, p.scale, ent.sub);
+        } else if (ent.type === 'ambush') {
+          drawDetailedChaser(ctx, p.x, p.y, p.scale, ent.chaser, g.frame + i * 5, ent.isParent, true);
+
+          if ((g.buffs.radarGlass || g.char.id === 'raisha') && ent.z < 0.85 && ent.z > 0.2) {
             ctx.fillStyle = '#ef4444';
             ctx.font = `bold ${Math.max(12, Math.floor(16 * p.scale))}px sans-serif`;
-            ctx.fillText('⚠️ সাবধান!', p.x, p.y - bh - 56 * p.scale);
+            ctx.textAlign = 'center';
+            ctx.fillText('⚠️ সাবধান!', p.x, p.y - 175 * p.scale);
           }
         }
 
-        // Collision
+        // Collision Detection
         if (ent.z <= 0.06 && ent.z >= -0.05) {
           const sameLane = Math.abs(ent.lane - g.visualLane) < 0.42;
 
@@ -610,6 +977,7 @@ export default function App() {
             const mult = (g.buffs.doubleCoin || g.char.id === 'lamia') ? 2 : 1;
             const bonus = g.char.id === 'jillu' ? 2 : 1;
             g.runCoins += mult * bonus;
+            spawnParticles(p.x, p.y - 25, '#facc15', 10);
             g.entities.splice(i, 1);
             continue;
           }
@@ -621,6 +989,8 @@ export default function App() {
 
             if (!clearedJump && !clearedHighJump && !clearedSlide) {
               g.entities.splice(i, 1);
+              spawnParticles(p.x, p.y - 40, '#ef4444', 18);
+              g.shakeTimer = 14;
 
               if (g.invincibleTimer > 0 || g.buffTimers.cloak > 0 || g.buffTimers.chocolate > 0) continue;
               if (g.buffTimers.skateboard > 0) { g.buffTimers.skateboard = 0; g.invincibleTimer = 60; sfx.stumble(); continue; }
@@ -659,19 +1029,27 @@ export default function App() {
         if (ent.z < -0.1) g.entities.splice(i, 1);
       }
 
-      // --- DRAW REAL SPRITE CHARACTER ON ROAD ---
+      // --- 5. DRAW PLAYER CHARACTER ---
       const playerProj = project(g.visualLane, 0.02);
       const px = playerProj.x;
       const py = playerProj.y - g.y * 1.6;
       const sheetCanvas = sheets[g.char.sheet];
 
-      // Shadow
-      ctx.fillStyle = 'rgba(0,0,0,0.32)';
+      // Ground Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.4)';
       ctx.beginPath();
-      ctx.ellipse(px, playerProj.y + 4, 28, 9, 0, 0, Math.PI * 2);
+      ctx.ellipse(px, playerProj.y + 4, 30, 10, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.globalAlpha = g.buffTimers.cloak > 0 ? 0.45 : 1;
+      // Skateboard
+      if (g.buffTimers.skateboard > 0) {
+        ctx.fillStyle = '#f97316';
+        ctx.beginPath();
+        ctx.roundRect(px - 28, py - 8, 56, 11, 5);
+        ctx.fill();
+      }
+
+      ctx.globalAlpha = g.buffTimers.cloak > 0 ? 0.45 : (g.invincibleTimer > 0 && g.frame % 6 < 3 ? 0.5 : 1);
 
       if (sheetCanvas) {
         const isPowerActive = g.isJumping || g.buffTimers.skateboard > 0 || g.buffTimers.chocolate > 0 || g.shield > 0;
@@ -682,7 +1060,7 @@ export default function App() {
         const sw = nw * sheetCanvas.width;
         const sh = nh * sheetCanvas.height;
 
-        const drawH = 128 * g.char.heightScale * (g.isSliding ? 0.58 : 1);
+        const drawH = 132 * g.char.heightScale * (g.isSliding ? 0.58 : 1);
         const drawW = drawH * (sw / sh);
         const bob = g.isJumping ? 0 : Math.sin(g.frame * 0.4) * 4;
 
@@ -696,32 +1074,56 @@ export default function App() {
         ctx.strokeStyle = '#fbbf24';
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(px, py - 55, 52, 0, Math.PI * 2);
+        ctx.arc(px, py - 55, 54, 0, Math.PI * 2);
         ctx.stroke();
       }
       ctx.globalAlpha = 1;
 
-      // --- DRAW CHASER BEHIND PLAYER ---
-      const chaserY = playerProj.y + (g.chaserDist * 0.75);
-      if (chaserY < H + 60) {
-        ctx.fillStyle = g.activeChaser.color;
-        ctx.beginPath();
-        ctx.roundRect(px - 22, chaserY - 75, 44, 55, 10);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(px, chaserY - 88, 16, 0, Math.PI * 2);
-        ctx.fillStyle = '#fed7aa';
-        ctx.fill();
-        ctx.font = '22px sans-serif';
-        ctx.fillText(g.activeChaser.weapon.split(' ')[1] || '🧹', px + 26, chaserY - 60);
+      // --- 6. DRAW CHASER BEHIND PLAYER ---
+      const chaserY = playerProj.y + (g.chaserDist * 0.78);
+      if (chaserY < H + 70) {
+        drawDetailedChaser(ctx, px, chaserY, 0.95, g.activeChaser, g.frame, true, false);
       }
 
-      // --- DIALOG SPEECH BUBBLE ---
+      // --- 7. SPARKLE PARTICLES ---
+      for (let i = g.particles.length - 1; i >= 0; i--) {
+        const pt = g.particles[i];
+        pt.x += pt.vx;
+        pt.y += pt.vy;
+        pt.vy += 0.25;
+        pt.life--;
+        ctx.globalAlpha = Math.max(0, pt.life / pt.maxLife);
+        ctx.fillStyle = pt.color;
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
+        ctx.fill();
+        if (pt.life <= 0) g.particles.splice(i, 1);
+      }
+      ctx.globalAlpha = 1;
+
+      // --- 8. ANIME SPEED LINES ON EDGES WHEN FAST ---
+      if (currentSpeed >= 8.4) {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+        ctx.lineWidth = 2;
+        for (let s = 0; s < 8; s++) {
+          const side = s % 2 === 0 ? 1 : -1;
+          const sx = side === 1 ? W - 15 - (s * 6) : 15 + (s * 6);
+          const sy = ((g.frame * 24 + s * 110) % H);
+          ctx.beginPath();
+          ctx.moveTo(sx, sy);
+          ctx.lineTo(sx, sy + 55);
+          ctx.stroke();
+        }
+      }
+
+      ctx.restore();
+
+      // --- 9. DIALOG SPEECH BUBBLE ---
       if (g.dialogTimer > 0 && g.activeDialog) {
-        const bw = Math.min(W - 30, 340);
+        const bw = Math.min(W - 30, 360);
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.roundRect(W / 2 - bw / 2, horizonY - 68, bw, 46, 14);
+        ctx.roundRect(W / 2 - bw / 2, horizonY + 12, bw, 44, 14);
         ctx.fill();
         ctx.strokeStyle = '#dc2626';
         ctx.lineWidth = 3;
@@ -729,21 +1131,25 @@ export default function App() {
         ctx.fillStyle = '#991b1b';
         ctx.font = 'bold 13px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(`${g.activeChaser.name}: "${g.activeDialog}"`, W / 2, horizonY - 40);
+        ctx.fillText(`${g.activeChaser.name}: "${g.activeDialog}"`, W / 2, horizonY + 38);
       }
 
-      // --- HUD ---
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+      // --- 10. MODERN HUD ---
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
       ctx.beginPath();
-      ctx.roundRect(14, 14, 150, 54, 14);
+      ctx.roundRect(14, 14, 170, 60, 16);
       ctx.fill();
+      ctx.strokeStyle = 'rgba(250, 204, 21, 0.45)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
       ctx.fillStyle = '#facc15';
       ctx.font = 'bold 16px sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText(`🪙 কয়েন: ${g.runCoins}`, 26, 36);
-      ctx.fillStyle = '#ffffff';
+      ctx.fillText(`🪙 কয়েন: ${g.runCoins}`, 28, 38);
+      ctx.fillStyle = '#f8fafc';
       ctx.font = 'bold 14px sans-serif';
-      ctx.fillText(`🏃 স্কোর: ${Math.floor(g.distance)}m`, 26, 58);
+      ctx.fillText(`🏃 স্কোর: ${Math.floor(g.distance)}m`, 28, 61);
 
       animId = requestAnimationFrame(loop);
     };
@@ -978,16 +1384,47 @@ export default function App() {
 
       {/* --- PLAYING SCREEN --- */}
       {screen === 'playing' && (
-        <div className="relative w-full h-full">
+        <div className={`relative w-full h-full ${paused ? 'cursor-auto' : 'cursor-none'}`}>
           <canvas ref={canvasRef} className="block w-full h-full touch-none" />
-          {activePowersUI.length > 0 && (
-            <div className="fixed top-4 right-4 flex gap-1.5 bg-slate-900/75 px-3 py-1.5 rounded-full border border-amber-400/40">
-              {activePowersUI.map((ic, idx) => <span key={idx} className="text-base">{ic}</span>)}
+
+          <div className="fixed top-4 right-4 flex items-center gap-2 z-20 cursor-auto">
+            {activePowersUI.length > 0 && (
+              <div className="flex gap-1.5 bg-slate-900/80 px-3 py-1.5 rounded-full border border-amber-400/40">
+                {activePowersUI.map((ic, idx) => <span key={idx} className="text-base">{ic}</span>)}
+              </div>
+            )}
+            <button
+              onClick={togglePause}
+              className="p-2.5 bg-slate-900/85 hover:bg-slate-800 text-amber-300 rounded-full border border-white/15 shadow-lg active:scale-95 transition"
+              title="Pause"
+            >
+              {paused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
+            </button>
+          </div>
+
+          {paused && (
+            <div className="fixed inset-0 bg-slate-950/75 backdrop-blur-sm z-30 flex flex-col items-center justify-center p-6 cursor-auto">
+              <div className="bg-slate-900 border-2 border-amber-400/50 rounded-3xl p-6 w-full max-w-xs text-center space-y-4 shadow-2xl">
+                <h2 className="text-2xl font-black text-amber-300">গেম পজ করা আছে</h2>
+                <button
+                  onClick={togglePause}
+                  className="w-full py-3 rounded-2xl bg-emerald-500 text-slate-950 font-black flex items-center justify-center gap-2"
+                >
+                  <Play className="w-5 h-5 fill-slate-950" /> আবার দৌড়াও
+                </button>
+                <button
+                  onClick={() => { setPaused(false); sfx.stopBgm(); setScreen('menu'); }}
+                  className="w-full py-3 rounded-2xl bg-slate-800 text-white font-bold flex items-center justify-center gap-2"
+                >
+                  <Home className="w-5 h-5 text-sky-400" /> মেইন মেনু
+                </button>
+              </div>
             </div>
           )}
+
           <div className="fixed bottom-3 w-full text-center pointer-events-none">
-            <span className="bg-black/40 text-white/80 text-[11px] px-3 py-1 rounded-full">
-              সোয়াইপ করো: ⬅️ বামে | ➡️ ডানে | ⬆️ জাম্প | ⬇️ স্লাইড
+            <span className="bg-black/50 text-white/90 text-[11px] px-3.5 py-1 rounded-full">
+              সোয়াইপ বা অ্যারো কী: ⬅️ বামে | ➡️ ডানে | ⬆️ জাম্প | ⬇️ স্লাইড
             </span>
           </div>
         </div>
@@ -1002,7 +1439,7 @@ export default function App() {
             {lastRunStats.caughtBy && (
               <div className="mt-3 bg-slate-950/70 p-3 rounded-2xl border border-rose-400/30">
                 <p className="text-xs text-amber-300 font-bold">
-                  ধরেছেন: {lastRunStats.caughtBy.name} ({lastRunStats.caughtBy.weapon})
+                  ধরেছেন: {lastRunStats.caughtBy.name} ({lastRunStats.caughtBy.weapon} {lastRunStats.caughtBy.emoji})
                 </p>
                 <p className="text-sm text-white italic mt-1">"{lastRunStats.caughtBy.dialog}"</p>
               </div>
