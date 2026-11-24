@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, ShoppingBag, Users, Volume2, VolumeX, Coins, Award, RotateCcw, Home, BookOpen, Pause } from 'lucide-react';
+import { Play, ShoppingBag, Users, Volume2, VolumeX, Coins, Award, RotateCcw, Home, BookOpen, Pause, ShieldCheck } from 'lucide-react';
 
 // --- SOUND ENGINE (Web Audio API) ---
 class SoundEngine {
@@ -55,7 +55,7 @@ class SoundEngine {
         this.playTone(notes[step % notes.length], 'triangle', 0.18, 0.045, 0);
         step++;
       }
-    }, 260);
+    }, 280);
   }
   stopBgm() {
     if (this.bgmInterval) { clearInterval(this.bgmInterval); this.bgmInterval = null; }
@@ -128,20 +128,20 @@ const CHARACTERS = [
 ];
 
 const SHOP_ITEMS = [
-  { id: 'skateboard', name: 'রকেট স্কেটবোর্ড', price: 10, desc: '২০ সেকেন্ড সুপার স্পিড ও সেফটি', icon: '🛹' },
-  { id: 'magnet', name: 'সুপার ম্যাগনেট', price: 10, desc: 'সব লেনের কয়েন কাছে টেনে নেবে', icon: '🧲' },
-  { id: 'sneakers', name: 'স্প্রিং জুতা', price: 10, desc: 'অনেক উঁচুতে লাফ দেওয়ার ক্ষমতা', icon: '👟' },
-  { id: 'cloak', name: 'অদৃশ্য চাদর', price: 10, desc: 'বাবা-মা ও আন্টিরা দেখতে পাবে না', icon: '🧥' },
-  { id: 'chocolate', name: 'চকলেট বুস্ট', price: 10, desc: 'শুরুতেই ঝড়ের গতিতে হেডস্টার্ট', icon: '🍫' },
-  { id: 'notebook', name: 'ফাঁকা খাতা (Save Me)', price: 15, desc: 'ধরা পড়লে খাতা দেখিয়ে বেঁচে যাবে', icon: '📓' },
-  { id: 'helmet', name: 'সেফটি হেলমেট', price: 15, desc: 'একবার ধাক্কায় আউট হবে না', icon: '🪖' },
-  { id: 'doubleCoin', name: 'ডাবল কয়েন কার্ড', price: 15, desc: 'সংগ্রহ করা কয়েন দ্বিগুণ হবে', icon: '💳' },
-  { id: 'glider', name: 'উইন্ড গ্লাইডার', price: 15, desc: 'লাফ দিলে বাতাসে ভেসে উড়বে', icon: '🪁' },
-  { id: 'watch', name: 'স্লো-মোশন ঘড়ি', price: 15, desc: 'চেসারদের গতি স্লো করে দেবে', icon: '⏱️' },
-  { id: 'radarGlass', name: 'স্মার্ট রাডার চশমা', price: 20, desc: 'সামনে ওঁৎ পাতা বিপদ আগে দেখাবে', icon: '🕶️' },
-  { id: 'converter', name: 'কয়েন কনভার্টার', price: 20, desc: 'সামনের বাধাগুলো কয়েন হয়ে যাবে', icon: '✨' },
-  { id: 'mysteryBox', name: 'মিস্ট্রি বক্স', price: 20, desc: 'খুললেই ১৫ থেকে ৬০ কয়েন বোনাস!', icon: '🎁' },
-  { id: 'ninjaShoes', name: 'সাইলেন্ট স্নিকার্স', price: 20, desc: 'পায়ে শব্দ হবে না, চেসার দূরে থাকবে', icon: '👟' },
+  { id: 'skateboard', name: 'রকেট স্কেটবোর্ড', price: 10, desc: '১৫ সেকেন্ড সুপার স্পিড ও সেফটি', icon: '🛹', duration: 900, active: true },
+  { id: 'magnet', name: 'সুপার ম্যাগনেট', price: 10, desc: '১৫ সেকেন্ড সব লেনের কয়েন টেনে নেবে', icon: '🧲', duration: 900, active: true },
+  { id: 'sneakers', name: 'স্প্রিং জুতা', price: 10, desc: '১৫ সেকেন্ড অনেক উঁচুতে লাফ দেওয়ার ক্ষমতা', icon: '👟', duration: 900, active: true },
+  { id: 'cloak', name: 'অদৃশ্য চাদর', price: 10, desc: '১২ সেকেন্ড বাবা-মা ও আন্টিরা দেখতে পাবে না', icon: '🧥', duration: 720, active: true },
+  { id: 'chocolate', name: 'চকলেট বুস্ট', price: 10, desc: '৮ সেকেন্ড ঝড়ের গতিতে সেফ বুস্ট', icon: '🍫', duration: 480, active: true },
+  { id: 'doubleCoin', name: 'ডাবল কয়েন কার্ড', price: 15, desc: '১৫ সেকেন্ড সংগ্রহ করা কয়েন দ্বিগুণ হবে', icon: '💳', duration: 900, active: true },
+  { id: 'glider', name: 'উইন্ড গ্লাইডার', price: 15, desc: '১৫ সেকেন্ড লাফ দিলে বাতাসে ভেসে উড়বে', icon: '🪁', duration: 900, active: true },
+  { id: 'watch', name: 'স্লো-মোশন ঘড়ি', price: 15, desc: '১২ সেকেন্ড চেসার ও বাধা স্লো করে দেবে', icon: '⏱️', duration: 720, active: true },
+  { id: 'radarGlass', name: 'স্মার্ট রাডার চশমা', price: 20, desc: '১৫ সেকেন্ড সামনের বিপদ আগে দেখাবে', icon: '🕶️', duration: 900, active: true },
+  { id: 'converter', name: 'কয়েন কনভার্টার', price: 20, desc: '১০ সেকেন্ড সামনের বাধাগুলো কয়েন হয়ে যাবে', icon: '✨', duration: 600, active: true },
+  { id: 'ninjaShoes', name: 'সাইলেন্ট স্নিকার্স', price: 20, desc: 'চেসারকে অনেক দূরে পাঠিয়ে দেবে', icon: '🥷', duration: 600, active: true },
+  { id: 'helmet', name: 'সেফটি হেলমেট', price: 15, desc: 'ধাক্কা লাগলে অটোমেটিক বাঁচিয়ে দেবে (Auto)', icon: '🪖', duration: 0, active: false },
+  { id: 'notebook', name: 'ফাঁকা খাতা (Save Me)', price: 15, desc: 'ধরা পড়লে খাতা দেখিয়ে বেঁচে যাবে (Auto)', icon: '📓', duration: 0, active: false },
+  { id: 'mysteryBox', name: 'মিস্ট্রি বক্স', price: 20, desc: 'খুললেই ১৫ থেকে ৬০ কয়েন বোনাস!', icon: '🎁', duration: 0, active: false },
 ];
 
 const CHASERS = [
@@ -208,6 +208,187 @@ function SpritePortrait({ char, pose = 'stand', sheets, className = 'w-16 h-16' 
   return <canvas ref={ref} width={140} height={140} className={className} />;
 }
 
+// --- SUBWAY SURFERS STYLE "CAUGHT BY COLLAR" ANIMATED SCENE ---
+function CaughtSceneCanvas({ char, chaser, sheets }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas || !chaser || !char) return;
+    const ctx = canvas.getContext('2d');
+    let animId;
+    let frame = 0;
+
+    const render = () => {
+      frame++;
+      const W = canvas.width;
+      const H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      // Spotlight Background
+      const bgGrad = ctx.createRadialGradient(W / 2, H / 2, 10, W / 2, H / 2, 150);
+      bgGrad.addColorStop(0, 'rgba(251, 191, 36, 0.25)');
+      bgGrad.addColorStop(1, 'rgba(15, 23, 42, 0)');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Floor Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.45)';
+      ctx.beginPath();
+      ctx.ellipse(W * 0.48, H - 14, 95, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // --- 1. DRAW ANGRY CHASER (LEFT SIDE) ---
+      const cx = W * 0.34;
+      const cy = H - 18;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+
+      // Chaser Legs
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.roundRect(-18, -36, 13, 36, 6);
+      ctx.roundRect(5, -36, 13, 36, 6);
+      ctx.fill();
+
+      // Chaser Torso
+      ctx.fillStyle = chaser.color;
+      ctx.beginPath();
+      ctx.roundRect(-28, -102, 56, 70, 16);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Left Arm (Swinging Weapon Angrily!)
+      ctx.save();
+      ctx.translate(-26, -92);
+      ctx.rotate(Math.sin(frame * 0.18) * 0.35 - 0.5);
+      ctx.fillStyle = '#fed7aa';
+      ctx.beginPath();
+      ctx.roundRect(-10, -4, 12, 34, 6);
+      ctx.fill();
+      ctx.font = '34px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(chaser.emoji, -6, -8);
+      ctx.restore();
+
+      // Chaser Head
+      ctx.fillStyle = '#fed7aa';
+      ctx.beginPath();
+      ctx.arc(0, -124, 23, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Hair / Bun
+      ctx.fillStyle = '#111827';
+      ctx.beginPath();
+      ctx.arc(0, -129, 23.5, Math.PI, Math.PI * 2);
+      ctx.fill();
+      if (chaser.gender === 'f') {
+        ctx.beginPath();
+        ctx.arc(0, -148, 10, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Angry Eyes & Eyebrows
+      ctx.strokeStyle = '#111827';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-12, -130);
+      ctx.lineTo(-2, -125);
+      ctx.moveTo(14, -130);
+      ctx.lineTo(4, -125);
+      ctx.stroke();
+
+      ctx.fillStyle = '#111827';
+      ctx.beginPath();
+      ctx.arc(-6, -122, 2.8, 0, Math.PI * 2);
+      ctx.arc(8, -122, 2.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Shouting Mouth
+      ctx.fillStyle = '#991b1b';
+      ctx.beginPath();
+      ctx.arc(2, -111, 5.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Right Arm Extended Holding Character's Collar!
+      const liftY = -92 + Math.sin(frame * 0.14) * 4;
+      ctx.strokeStyle = '#fed7aa';
+      ctx.lineWidth = 12;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(22, -92);
+      ctx.lineTo(78, liftY);
+      ctx.stroke();
+
+      // Fist gripping collar
+      ctx.fillStyle = '#fed7aa';
+      ctx.beginPath();
+      ctx.arc(82, liftY, 9, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+
+      // --- 2. DRAW LIFTED & EMBARRASSED CHARACTER (DANGLING IN AIR!) ---
+      const px = cx + 86;
+      const py = cy + liftY + 12;
+      const dangleAngle = Math.sin(frame * 0.14) * 0.08;
+      const sheetCanvas = sheets[char.sheet];
+
+      ctx.save();
+      ctx.translate(px, py);
+      ctx.rotate(dangleAngle);
+
+      if (sheetCanvas) {
+        const [nx, ny, nw, nh] = char.crops.stand;
+        const sx = nx * sheetCanvas.width;
+        const sy = ny * sheetCanvas.height;
+        const sw = nw * sheetCanvas.width;
+        const sh = nh * sheetCanvas.height;
+
+        const drawH = 104 * char.heightScale;
+        const drawW = drawH * (sw / sh);
+        ctx.drawImage(sheetCanvas, sx, sy, sw, sh, -drawW / 2, 0, drawW, drawH);
+      } else {
+        ctx.fillStyle = char.color;
+        ctx.fillRect(-18, 0, 36, 75);
+      }
+
+      // Sweat Drops & Embarrassed/Upset Reaction Icons!
+      const sweatY = (frame * 0.8) % 18;
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.arc(-26, 12 + sweatY, 3.5, 0, Math.PI * 2);
+      ctx.arc(26, 18 + sweatY, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Upset / Shame Emoji Bubble above Character
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(24, -14, 15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#f43f5e';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.font = '17px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('😓', 24, -13);
+
+      ctx.restore();
+
+      animId = requestAnimationFrame(render);
+    };
+
+    animId = requestAnimationFrame(render);
+    return () => cancelAnimationFrame(animId);
+  }, [char, chaser, sheets]);
+
+  return <canvas ref={ref} width={300} height={185} className="mx-auto block" />;
+}
+
 // --- 3D CARTOON CHASER RENDERER ---
 function drawDetailedChaser(ctx, x, y, scale, chaser, frame, isParent = false, showTag = true) {
   ctx.save();
@@ -217,20 +398,17 @@ function drawDetailedChaser(ctx, x, y, scale, chaser, frame, isParent = false, s
   const bob = Math.sin(frame * 0.35) * 4;
   const legSwing = Math.sin(frame * 0.35) * 11;
 
-  // Ground Shadow
   ctx.fillStyle = 'rgba(0,0,0,0.4)';
   ctx.beginPath();
   ctx.ellipse(0, 2, 28, 9, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Shoes & Legs
   ctx.fillStyle = '#0f172a';
   ctx.beginPath();
   ctx.roundRect(-15, -30 + legSwing * 0.45, 11, 30, 5);
   ctx.roundRect(4, -30 - legSwing * 0.45, 11, 30, 5);
   ctx.fill();
 
-  // 3D Shaded Torso
   const bodyGrad = ctx.createLinearGradient(-24, -82, 24, -28);
   bodyGrad.addColorStop(0, chaser.color);
   bodyGrad.addColorStop(1, '#0f172a');
@@ -242,7 +420,6 @@ function drawDetailedChaser(ctx, x, y, scale, chaser, frame, isParent = false, s
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  // Collar / Scarf Detail
   ctx.fillStyle = '#fef3c7';
   ctx.beginPath();
   ctx.moveTo(-10, -82 + bob);
@@ -250,13 +427,11 @@ function drawDetailedChaser(ctx, x, y, scale, chaser, frame, isParent = false, s
   ctx.lineTo(10, -82 + bob);
   ctx.fill();
 
-  // Left Arm
   ctx.fillStyle = '#fed7aa';
   ctx.beginPath();
   ctx.roundRect(-32, -76 + bob - legSwing * 0.3, 9, 30, 5);
   ctx.fill();
 
-  // Right Arm + Animated Weapon
   ctx.save();
   ctx.translate(26, -74 + bob);
   ctx.rotate(Math.sin(frame * 0.25) * 0.3 - 0.35);
@@ -269,13 +444,11 @@ function drawDetailedChaser(ctx, x, y, scale, chaser, frame, isParent = false, s
   ctx.fillText(chaser.emoji, 5, 6);
   ctx.restore();
 
-  // Head
   ctx.fillStyle = '#fed7aa';
   ctx.beginPath();
   ctx.arc(0, -100 + bob, 19, 0, Math.PI * 2);
   ctx.fill();
 
-  // Hair / Bun
   ctx.fillStyle = '#111827';
   ctx.beginPath();
   ctx.arc(0, -104 + bob, 19.5, Math.PI, Math.PI * 2);
@@ -286,7 +459,6 @@ function drawDetailedChaser(ctx, x, y, scale, chaser, frame, isParent = false, s
     ctx.fill();
   }
 
-  // Angry Eyebrows & Eyes
   ctx.strokeStyle = '#111827';
   ctx.lineWidth = 2.8;
   ctx.beginPath();
@@ -309,13 +481,11 @@ function drawDetailedChaser(ctx, x, y, scale, chaser, frame, isParent = false, s
     ctx.strokeRect(2, -102 + bob, 10, 7);
   }
 
-  // Shouting Mouth
   ctx.fillStyle = '#991b1b';
   ctx.beginPath();
   ctx.arc(0, -90 + bob, 4.5, 0, Math.PI * 2);
   ctx.fill();
 
-  // High-Contrast Nameplate
   if (showTag) {
     const label = `${chaser.name} • ${chaser.weapon}`;
     ctx.font = 'bold 13px sans-serif';
@@ -347,14 +517,12 @@ function draw3DObstacle(ctx, x, y, scale, sub) {
   ctx.translate(x, y);
   ctx.scale(scale, scale);
 
-  // Ground shadow
   ctx.fillStyle = 'rgba(0,0,0,0.35)';
   ctx.beginPath();
   ctx.ellipse(0, 2, 42, 10, 0, 0, Math.PI * 2);
   ctx.fill();
 
   if (sub === 'books') {
-    // 3D Stacked Textbooks with Top Face & Pages
     const books = [
       { color: '#dc2626', top: '#f87171', h: 15, w: 74 },
       { color: '#2563eb', top: '#60a5fa', h: 15, w: 68 },
@@ -362,13 +530,10 @@ function draw3DObstacle(ctx, x, y, scale, sub) {
     ];
     let curY = 0;
     books.forEach((b) => {
-      // Front Spine
       ctx.fillStyle = b.color;
       ctx.fillRect(-b.w / 2, curY - b.h, b.w, b.h);
-      // White Pages Strip
       ctx.fillStyle = '#fef9c3';
       ctx.fillRect(-b.w / 2 + 5, curY - b.h + 3, b.w - 10, b.h - 6);
-      // 3D Top Face
       ctx.fillStyle = b.top;
       ctx.beginPath();
       ctx.moveTo(-b.w / 2, curY - b.h);
@@ -380,7 +545,6 @@ function draw3DObstacle(ctx, x, y, scale, sub) {
       curY -= b.h;
     });
 
-    // Clear Badge
     ctx.fillStyle = '#0f172a';
     ctx.beginPath();
     ctx.roundRect(-38, curY - 30, 76, 20, 10);
@@ -390,19 +554,15 @@ function draw3DObstacle(ctx, x, y, scale, sub) {
     ctx.textAlign = 'center';
     ctx.fillText('⬆️ জাম্প করো', 0, curY - 16);
   } else {
-    // 3D High Study Table (Slide Under!)
     const w = 80;
     const h = 64;
-    // Back Legs
     ctx.fillStyle = '#451a03';
     ctx.fillRect(-w / 2 + 12, -h, 8, h - 4);
     ctx.fillRect(w / 2 - 20, -h, 8, h - 4);
-    // Front Legs
     ctx.fillStyle = '#78350f';
     ctx.fillRect(-w / 2 + 4, -h + 6, 9, h - 6);
     ctx.fillRect(w / 2 - 13, -h + 6, 9, h - 6);
 
-    // Table Top (3D Perspective)
     ctx.fillStyle = '#b45309';
     ctx.beginPath();
     ctx.moveTo(-w / 2 - 4, -h + 6);
@@ -412,11 +572,9 @@ function draw3DObstacle(ctx, x, y, scale, sub) {
     ctx.closePath();
     ctx.fill();
 
-    // Table Front Edge
     ctx.fillStyle = '#92400e';
     ctx.fillRect(-w / 2 - 4, -h + 6, w + 8, 10);
 
-    // Clear Slide Badge
     ctx.fillStyle = '#0f172a';
     ctx.beginPath();
     ctx.roundRect(-40, -h - 32, 80, 20, 10);
@@ -431,7 +589,7 @@ function draw3DObstacle(ctx, x, y, scale, sub) {
 }
 
 export default function App() {
-  const [coins, setCoins] = useState(() => Number(localStorage.getItem('pe_coins') || 20));
+  const [coins, setCoins] = useState(() => Number(localStorage.getItem('pe_coins') || 30));
   const [highScore, setHighScore] = useState(() => Number(localStorage.getItem('pe_highscore') || 0));
   const [unlockedChars, setUnlockedChars] = useState(() => {
     const saved = localStorage.getItem('pe_chars');
@@ -449,13 +607,15 @@ export default function App() {
   const [muted, setMuted] = useState(false);
   const [toast, setToast] = useState('');
   const [lastRunStats, setLastRunStats] = useState({ score: 0, coinsEarned: 0, caughtBy: null });
-  const [activePowersUI, setActivePowersUI] = useState([]);
+  const [activeTimersUI, setActiveTimersUI] = useState([]);
 
   const canvasRef = useRef(null);
   const gameStateRef = useRef(null);
   const pausedRef = useRef(false);
+  const inventoryRef = useRef(inventory);
 
   useEffect(() => { pausedRef.current = paused; }, [paused]);
+  useEffect(() => { inventoryRef.current = inventory; }, [inventory]);
 
   useEffect(() => {
     Promise.all([
@@ -542,28 +702,45 @@ export default function App() {
     showToast(`${item.icon} ${item.name} কেনা হয়েছে! (স্টক: ${(inventory[item.id] || 0) + 1})`);
   };
 
+  // --- ON-DEMAND POWER ACTIVATION ---
+  const activateGadget = (itemId) => {
+    const g = gameStateRef.current;
+    if (!g || !g.running || pausedRef.current) return;
+    const count = inventoryRef.current[itemId] || 0;
+    if (count <= 0) return;
+
+    const item = SHOP_ITEMS.find(i => i.id === itemId);
+    if (!item || !item.active) return;
+
+    // Deduct 1 from inventory
+    setInventory(prev => ({
+      ...prev,
+      [itemId]: Math.max(0, (prev[itemId] || 0) - 1)
+    }));
+
+    sfx.powerup();
+    g.buffTimers[itemId] = item.duration;
+    g.buffMaxTimers[itemId] = item.duration;
+
+    if (itemId === 'ninjaShoes') {
+      g.chaserDist = 175;
+    }
+
+    showToast(`${item.icon} ${item.name} চালু হয়েছে!`);
+  };
+
   const startGame = () => {
     sfx.init();
     sfx.startBgm();
     setPaused(false);
     const char = CHARACTERS.find(c => c.id === selectedCharId) || CHARACTERS[0];
 
-    const activeBuffs = {};
-    const nextInv = { ...inventory };
-    Object.keys(nextInv).forEach(key => {
-      if (nextInv[key] > 0) {
-        activeBuffs[key] = true;
-        nextInv[key] -= 1;
-      }
-    });
-    setInventory(nextInv);
-
-    // Balanced speeds so Hard mode is thrilling yet clearly visible
-    const baseSpeed = char.tier === 'Easy' ? 6.8 : char.tier === 'Medium' ? 7.8 : 8.6;
+    // Comfortable, smooth running speed
+    const baseSpeed = char.tier === 'Easy' ? 4.6 : char.tier === 'Medium' ? 5.4 : 6.2;
 
     const scenery = [];
-    for (let i = 0; i < 12; i++) {
-      scenery.push({ z: i * 0.085, side: i % 2 === 0 ? -1 : 1, kind: i % 3 === 0 ? 'house' : i % 2 === 0 ? 'lamp' : 'tree' });
+    for (let i = 0; i < 16; i++) {
+      scenery.push({ z: i * 0.1, side: i % 2 === 0 ? -1 : 1, kind: i % 3 === 0 ? 'house' : i % 2 === 0 ? 'lamp' : 'tree' });
     }
 
     gameStateRef.current = {
@@ -576,7 +753,6 @@ export default function App() {
       isJumping: false,
       isSliding: false,
       slideTimer: 0,
-      speed: activeBuffs.chocolate ? baseSpeed + 3.5 : baseSpeed,
       baseSpeed,
       distance: 0,
       runCoins: 0,
@@ -584,27 +760,18 @@ export default function App() {
       particles: [],
       scenery,
       spawnTimer: 0,
-      chaserDist: activeBuffs.ninjaShoes ? 140 : 85,
+      chaserDist: 95,
       activeChaser: CHASERS[Math.floor(Math.random() * CHASERS.length)],
       activeDialog: '',
       dialogTimer: 0,
       shakeTimer: 0,
-      buffs: activeBuffs,
-      buffTimers: {
-        skateboard: activeBuffs.skateboard ? 900 : 0,
-        cloak: activeBuffs.cloak ? 600 : 0,
-        chocolate: activeBuffs.chocolate ? 300 : 0,
-        converter: activeBuffs.converter ? 500 : 0,
-        watch: activeBuffs.watch ? 500 : 0,
-      },
-      shield: activeBuffs.helmet ? 1 : 0,
-      saveMe: activeBuffs.notebook ? 1 : 0,
+      buffTimers: {},
+      buffMaxTimers: {},
       invincibleTimer: 0,
       frame: 0,
     };
 
-    const labels = Object.keys(activeBuffs).map(k => SHOP_ITEMS.find(i => i.id === k)?.icon).filter(Boolean);
-    setActivePowersUI(labels);
+    setActiveTimersUI([]);
     setScreen('playing');
   };
 
@@ -651,7 +818,8 @@ export default function App() {
       if (!g || pausedRef.current || g.isJumping) return;
       g.isJumping = true;
       g.isSliding = false;
-      g.vy = g.buffs.sneakers || g.char.id === 'simon' ? 17.5 : 14.5;
+      const hasSpring = (g.buffTimers.sneakers || 0) > 0 || g.char.id === 'simon';
+      g.vy = hasSpring ? 17.5 : 14.5;
       sfx.jump();
     };
     const doSlide = () => {
@@ -659,7 +827,7 @@ export default function App() {
       if (!g || pausedRef.current) return;
       if (g.isJumping) g.vy = -14;
       g.isSliding = true;
-      g.slideTimer = 32;
+      g.slideTimer = 34;
       sfx.slide();
     };
 
@@ -669,6 +837,13 @@ export default function App() {
       if (e.key === 'ArrowRight' || e.key === 'd') doRight();
       if (e.key === 'ArrowUp' || e.key === 'w' || e.key === ' ') doJump();
       if (e.key === 'ArrowDown' || e.key === 's') doSlide();
+
+      // Number keys 1-9 trigger owned active gadgets
+      if (e.key >= '1' && e.key <= '9') {
+        const ownedActives = SHOP_ITEMS.filter(it => it.active && (inventoryRef.current[it.id] || 0) > 0);
+        const chosen = ownedActives[Number(e.key) - 1];
+        if (chosen) activateGadget(chosen.id);
+      }
     };
     const onTouchStart = (e) => {
       touchStartX = e.touches[0].clientX;
@@ -701,25 +876,49 @@ export default function App() {
 
       const W = canvas.width;
       const H = canvas.height;
-      // High Camera Angle (horizonY = 0.21) so far road & obstacles are super clear even in Hard mode!
-      const horizonY = H * 0.21;
+      // Extended Far Horizon (horizonY = 0.14) so road stretches deep into the distance!
+      const horizonY = H * 0.14;
       const groundY = H * 0.87;
+      const MAX_Z = 1.65;
 
-      Object.keys(g.buffTimers).forEach(k => { if (g.buffTimers[k] > 0) g.buffTimers[k]--; });
+      Object.keys(g.buffTimers).forEach(k => {
+        if (g.buffTimers[k] > 0) g.buffTimers[k]--;
+      });
       if (g.invincibleTimer > 0) g.invincibleTimer--;
       if (g.dialogTimer > 0) g.dialogTimer--;
       if (g.shakeTimer > 0) g.shakeTimer--;
 
-      const currentSpeed = g.buffTimers.chocolate > 0 ? g.baseSpeed + 4.2 : g.buffTimers.skateboard > 0 ? g.baseSpeed + 2.2 : g.baseSpeed + Math.min(3.2, g.distance / 3000);
+      // Update UI Progress Bars every 10 frames
+      if (g.frame % 10 === 0) {
+        const activeList = Object.entries(g.buffTimers)
+          .filter(([, val]) => val > 0)
+          .map(([id, val]) => {
+            const it = SHOP_ITEMS.find(x => x.id === id);
+            return {
+              id,
+              icon: it?.icon || '⚡',
+              name: it?.name || id,
+              pct: Math.round((val / (g.buffMaxTimers[id] || 600)) * 100)
+            };
+          });
+        setActiveTimersUI(activeList);
+      }
+
+      // Smooth, comfortable speed calculation
+      const slowFactor = (g.buffTimers.watch || 0) > 0 ? 0.72 : 1.0;
+      const boostAdd = (g.buffTimers.chocolate || 0) > 0 ? 3.2 : (g.buffTimers.skateboard || 0) > 0 ? 1.8 : 0;
+      const currentSpeed = (g.baseSpeed + Math.min(2.2, g.distance / 4500) + boostAdd) * slowFactor;
+
       g.distance += currentSpeed * 0.15;
 
-      const chaserRecovery = g.buffTimers.watch > 0 ? 0.02 : 0.08;
+      const chaserRecovery = (g.buffTimers.watch || 0) > 0 ? 0.02 : 0.07;
       if (g.chaserDist < 110) g.chaserDist += chaserRecovery;
 
       g.visualLane += (g.lane - g.visualLane) * 0.24;
       if (g.isJumping) {
         g.y += g.vy;
-        const gravity = (g.buffs.glider || g.char.id === 'alif') && g.vy < 0 ? 0.42 : 0.72;
+        const hasGlider = (g.buffTimers.glider || 0) > 0 || g.char.id === 'alif';
+        const gravity = hasGlider && g.vy < 0 ? 0.38 : 0.70;
         g.vy -= gravity;
         if (g.y <= 0) { g.y = 0; g.vy = 0; g.isJumping = false; }
       }
@@ -728,36 +927,37 @@ export default function App() {
         if (g.slideTimer <= 0) g.isSliding = false;
       }
 
-      // Proportional Spawn Spacing (prevents overcrowding in Hard mode!)
+      // Spawn Entities far down the extended road (z = 1.65)
       g.spawnTimer -= currentSpeed;
       if (g.spawnTimer <= 0) {
-        g.spawnTimer = 140 + currentSpeed * 6;
+        g.spawnTimer = 145;
         const lane = Math.floor(Math.random() * 3);
         const roll = Math.random();
 
         if (roll < 0.46) {
-          for (let i = 0; i < 4; i++) g.entities.push({ type: 'coin', lane, z: 1.0 + i * 0.065 });
+          for (let i = 0; i < 4; i++) g.entities.push({ type: 'coin', lane, z: MAX_Z + i * 0.08 });
         } else if (roll < 0.74) {
           const ambusher = CHASERS[Math.floor(Math.random() * CHASERS.length)];
           const isParent = g.char.parents.includes(ambusher.id);
-          g.entities.push({ type: 'ambush', lane, z: 1.0, chaser: ambusher, isParent });
+          g.entities.push({ type: 'ambush', lane, z: MAX_Z, chaser: ambusher, isParent });
           const safeLane = (lane + 1) % 3;
-          g.entities.push({ type: 'coin', lane: safeLane, z: 1.0 });
-          g.entities.push({ type: 'coin', lane: safeLane, z: 1.07 });
+          g.entities.push({ type: 'coin', lane: safeLane, z: MAX_Z });
+          g.entities.push({ type: 'coin', lane: safeLane, z: MAX_Z + 0.09 });
         } else {
           const sub = Math.random() < 0.5 ? 'books' : 'table';
-          g.entities.push({ type: 'obstacle', sub, lane, z: 1.0 });
+          g.entities.push({ type: 'obstacle', sub, lane, z: MAX_Z });
           const safeLane = (lane + 2) % 3;
-          g.entities.push({ type: 'coin', lane: safeLane, z: 1.02 });
+          g.entities.push({ type: 'coin', lane: safeLane, z: MAX_Z + 0.03 });
         }
       }
 
-      // Improved Linear-Perspective Projection for Maximum Forward Visibility
+      // Deep Perspective Projection (z from MAX_Z=1.65 down to 0)
       const project = (laneIdx, z) => {
-        const progress = 1 - z;
-        const scale = 0.26 + progress * 0.92;
-        const y = horizonY + Math.pow(progress, 1.15) * (groundY - horizonY);
-        const roadHalfW = (W * 0.11) + Math.pow(progress, 1.1) * (W * 0.36);
+        const normZ = Math.min(1, Math.max(0, z / MAX_Z));
+        const progress = 1 - normZ;
+        const scale = 0.18 + Math.pow(progress, 1.15) * 1.02;
+        const y = horizonY + Math.pow(progress, 1.35) * (groundY - horizonY);
+        const roadHalfW = (W * 0.065) + Math.pow(progress, 1.3) * (W * 0.405);
         const x = W / 2 + (laneIdx - 1) * (roadHalfW * 0.66);
         return { x, y, scale, roadHalfW };
       };
@@ -767,12 +967,12 @@ export default function App() {
         ctx.translate((Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10);
       }
 
-      // --- 1. VIBRANT SKY, CITY SILHOUETTE & CLOUDS ---
+      // --- 1. VIBRANT SKY & HORIZON ---
       const stage = g.distance < 400 ? 0 : g.distance < 950 ? 1 : 2;
       const skyPalettes = [
-        ['#0284c7', '#38bdf8', '#bae6fd'], // Crisp Morning Blue
-        ['#4f46e5', '#818cf8', '#e0e7ff'], // Royal Indigo Day
-        ['#c2410c', '#f97316', '#fde047'], // Golden Sunset
+        ['#0284c7', '#38bdf8', '#bae6fd'],
+        ['#4f46e5', '#818cf8', '#e0e7ff'],
+        ['#c2410c', '#f97316', '#fde047'],
       ];
       const skyGrad = ctx.createLinearGradient(0, 0, 0, horizonY);
       skyGrad.addColorStop(0, skyPalettes[stage][0]);
@@ -781,87 +981,66 @@ export default function App() {
       ctx.fillStyle = skyGrad;
       ctx.fillRect(0, 0, W, horizonY);
 
-      // Glowing Sun
-      ctx.fillStyle = 'rgba(254, 240, 138, 0.35)';
-      ctx.beginPath();
-      ctx.arc(W * 0.82, horizonY * 0.42, 34, 0, Math.PI * 2);
-      ctx.fill();
       ctx.fillStyle = '#fef9c3';
       ctx.beginPath();
-      ctx.arc(W * 0.82, horizonY * 0.42, 20, 0, Math.PI * 2);
+      ctx.arc(W * 0.82, horizonY * 0.45, 16, 0, Math.PI * 2);
       ctx.fill();
 
-      // Moving Clouds
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.82)';
-      [0.15, 0.48, 0.82].forEach((cx, idx) => {
-        const cloudX = ((cx * W + g.frame * (0.25 + idx * 0.08)) % (W + 150)) - 75;
-        const cloudY = horizonY * (0.28 + (idx % 2) * 0.22);
-        ctx.beginPath();
-        ctx.arc(cloudX, cloudY, 16, 0, Math.PI * 2);
-        ctx.arc(cloudX + 15, cloudY - 4, 20, 0, Math.PI * 2);
-        ctx.arc(cloudX + 32, cloudY, 15, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      // Distant Dhaka / Town Skyline on Horizon
+      // City Skyline
       ctx.fillStyle = stage === 2 ? '#7c2d12' : '#1e293b';
-      for (let bx = 0; bx < W; bx += 42) {
-        const bh = 14 + ((bx * 17) % 24);
-        ctx.fillRect(bx, horizonY - bh, 36, bh);
-        // Tiny Lit Windows
-        ctx.fillStyle = '#facc15';
-        if (bx % 84 === 0) ctx.fillRect(bx + 8, horizonY - bh + 5, 5, 5);
-        ctx.fillStyle = stage === 2 ? '#7c2d12' : '#1e293b';
+      for (let bx = 0; bx < W; bx += 38) {
+        const bh = 10 + ((bx * 17) % 18);
+        ctx.fillRect(bx, horizonY - bh, 32, bh);
       }
 
-      // --- 2. GRASS GROUND & 3-TRACK RAILWAY / BRICK ROAD ---
+      // --- 2. GRASS & LONG RAILWAY TRACKS ---
       const grassGrad = ctx.createLinearGradient(0, horizonY, 0, H);
       grassGrad.addColorStop(0, stage === 2 ? '#a16207' : '#16a34a');
       grassGrad.addColorStop(1, stage === 2 ? '#422006' : '#14532d');
       ctx.fillStyle = grassGrad;
       ctx.fillRect(0, horizonY, W, H - horizonY);
 
-      // Brick Sidewalks / Curbs
+      // Brick Borders
       ctx.beginPath();
-      ctx.moveTo(W / 2 - W * 0.122, horizonY);
-      ctx.lineTo(W / 2 + W * 0.122, horizonY);
+      ctx.moveTo(W / 2 - W * 0.072, horizonY);
+      ctx.lineTo(W / 2 + W * 0.072, horizonY);
       ctx.lineTo(W / 2 + W * 0.50, H);
       ctx.lineTo(W / 2 - W * 0.50, H);
       ctx.closePath();
       ctx.fillStyle = '#b91c1c';
       ctx.fill();
 
-      // Gravel Track Bed
+      // Main Track Bed
       const roadGrad = ctx.createLinearGradient(0, horizonY, 0, H);
       roadGrad.addColorStop(0, '#475569');
       roadGrad.addColorStop(1, '#1e293b');
       ctx.beginPath();
-      ctx.moveTo(W / 2 - W * 0.11, horizonY);
-      ctx.lineTo(W / 2 + W * 0.11, horizonY);
+      ctx.moveTo(W / 2 - W * 0.065, horizonY);
+      ctx.lineTo(W / 2 + W * 0.065, horizonY);
       ctx.lineTo(W / 2 + W * 0.47, H);
       ctx.lineTo(W / 2 - W * 0.47, H);
       ctx.closePath();
       ctx.fillStyle = roadGrad;
       ctx.fill();
 
-      // Animated Wooden Railway Sleepers across all 3 Lanes
-      const sleeperStep = 0.055;
+      // Wooden Sleepers
+      const sleeperStep = 0.065;
       const sleeperOffset = (g.frame * currentSpeed * 0.0022) % sleeperStep;
-      for (let z = 1 - sleeperOffset; z > 0; z -= sleeperStep) {
+      for (let z = MAX_Z - sleeperOffset; z > 0; z -= sleeperStep) {
         const p = project(1, z);
         const sw = p.roadHalfW * 1.88;
-        const sh = Math.max(2, 6 * p.scale);
+        const sh = Math.max(1.5, 6 * p.scale);
         ctx.fillStyle = '#78350f';
         ctx.fillRect(W / 2 - sw / 2, p.y - sh / 2, sw, sh);
       }
 
-      // 6 Shiny Steel Rails (2 per Lane)
+      // 6 Steel Rails
       [-0.66, 0, 0.66].forEach(laneOffset => {
         [-0.14, 0.14].forEach(railOffset => {
-          const topX = W / 2 + (W * 0.11) * (laneOffset + railOffset);
+          const topX = W / 2 + (W * 0.065) * (laneOffset + railOffset);
           const botX = W / 2 + (W * 0.47) * (laneOffset + railOffset);
           ctx.strokeStyle = '#cbd5e1';
-          ctx.lineWidth = 3;
+          ctx.lineWidth = 2.5;
           ctx.beginPath();
           ctx.moveTo(topX, horizonY);
           ctx.lineTo(botX, H);
@@ -869,11 +1048,11 @@ export default function App() {
         });
       });
 
-      // --- 3. MOVING ROADSIDE TREES, HOUSES & STREET LAMPS ---
+      // --- 3. ROADSIDE TREES, HOUSES & LAMPS ---
       g.scenery.forEach(item => {
         item.z -= currentSpeed * 0.0022;
         if (item.z < -0.05) {
-          item.z = 1.0;
+          item.z = MAX_Z;
           const r = Math.random();
           item.kind = r < 0.35 ? 'house' : r < 0.65 ? 'lamp' : 'tree';
         }
@@ -914,15 +1093,18 @@ export default function App() {
         }
       });
 
-      // --- 4. ENTITIES (COINS, 3D OBSTACLES, AMBUSH CHASERS) ---
+      // --- 4. ENTITIES ---
       g.entities.sort((a, b) => b.z - a.z);
 
       for (let i = g.entities.length - 1; i >= 0; i--) {
         const ent = g.entities[i];
         ent.z -= currentSpeed * 0.0022;
 
-        if (g.buffTimers.converter > 0 && (ent.type === 'obstacle' || ent.type === 'ambush')) ent.type = 'coin';
-        if (ent.type === 'coin' && (g.buffs.magnet || g.char.id === 'tanha') && ent.z < 0.48 && ent.z > 0) {
+        if ((g.buffTimers.converter || 0) > 0 && (ent.type === 'obstacle' || ent.type === 'ambush')) {
+          ent.type = 'coin';
+        }
+        const hasMagnet = (g.buffTimers.magnet || 0) > 0 || g.char.id === 'tanha';
+        if (ent.type === 'coin' && hasMagnet && ent.z < 0.65 && ent.z > 0) {
           ent.lane += (g.visualLane - ent.lane) * 0.26;
         }
 
@@ -960,7 +1142,8 @@ export default function App() {
         } else if (ent.type === 'ambush') {
           drawDetailedChaser(ctx, p.x, p.y, p.scale, ent.chaser, g.frame + i * 5, ent.isParent, true);
 
-          if ((g.buffs.radarGlass || g.char.id === 'raisha') && ent.z < 0.85 && ent.z > 0.2) {
+          const hasRadar = (g.buffTimers.radarGlass || 0) > 0 || g.char.id === 'raisha';
+          if (hasRadar && ent.z < 1.35 && ent.z > 0.2) {
             ctx.fillStyle = '#ef4444';
             ctx.font = `bold ${Math.max(12, Math.floor(16 * p.scale))}px sans-serif`;
             ctx.textAlign = 'center';
@@ -974,7 +1157,7 @@ export default function App() {
 
           if (sameLane && ent.type === 'coin') {
             sfx.coin();
-            const mult = (g.buffs.doubleCoin || g.char.id === 'lamia') ? 2 : 1;
+            const mult = ((g.buffTimers.doubleCoin || 0) > 0 || g.char.id === 'lamia') ? 2 : 1;
             const bonus = g.char.id === 'jillu' ? 2 : 1;
             g.runCoins += mult * bonus;
             spawnParticles(p.x, p.y - 25, '#facc15', 10);
@@ -992,9 +1175,25 @@ export default function App() {
               spawnParticles(p.x, p.y - 40, '#ef4444', 18);
               g.shakeTimer = 14;
 
-              if (g.invincibleTimer > 0 || g.buffTimers.cloak > 0 || g.buffTimers.chocolate > 0) continue;
-              if (g.buffTimers.skateboard > 0) { g.buffTimers.skateboard = 0; g.invincibleTimer = 60; sfx.stumble(); continue; }
-              if (g.shield > 0) { g.shield = 0; g.invincibleTimer = 60; sfx.stumble(); continue; }
+              if (g.invincibleTimer > 0 || (g.buffTimers.cloak || 0) > 0 || (g.buffTimers.chocolate || 0) > 0) continue;
+
+              // Skateboard absorbs 1 hit
+              if ((g.buffTimers.skateboard || 0) > 0) {
+                g.buffTimers.skateboard = 0;
+                g.invincibleTimer = 60;
+                sfx.stumble();
+                showToast('🛹 স্কেটবোর্ড তোমাকে বাঁচিয়ে দিলো!');
+                continue;
+              }
+
+              // Auto Safety Helmet from Inventory
+              if ((inventoryRef.current.helmet || 0) > 0) {
+                setInventory(prev => ({ ...prev, helmet: Math.max(0, (prev.helmet || 0) - 1) }));
+                g.invincibleTimer = 75;
+                sfx.powerup();
+                showToast('🪖 সেফটি হেলমেট ধাক্কা সামলে নিলো!');
+                continue;
+              }
 
               if (ent.type === 'obstacle' && (g.chaserDist > 45 || g.char.id === 'tisha')) {
                 sfx.stumble();
@@ -1004,14 +1203,18 @@ export default function App() {
                 g.dialogTimer = 130;
                 g.invincibleTimer = 45;
               } else {
-                if (g.saveMe > 0) {
-                  g.saveMe = 0;
-                  g.invincibleTimer = 90;
+                // Auto Save-Me Notebook from Inventory
+                if ((inventoryRef.current.notebook || 0) > 0) {
+                  setInventory(prev => ({ ...prev, notebook: Math.max(0, (prev.notebook || 0) - 1) }));
+                  g.invincibleTimer = 95;
+                  g.chaserDist = 110;
                   g.activeDialog = '📓 খাতা দেখে ছেড়ে দিলো!';
                   g.dialogTimer = 110;
                   sfx.powerup();
+                  showToast('📓 ফাঁকা খাতা দেখিয়ে বেঁচে গেলে!');
                   continue;
                 }
+
                 g.running = false;
                 sfx.stopBgm();
                 sfx.gameover();
@@ -1035,24 +1238,23 @@ export default function App() {
       const py = playerProj.y - g.y * 1.6;
       const sheetCanvas = sheets[g.char.sheet];
 
-      // Ground Shadow
       ctx.fillStyle = 'rgba(0,0,0,0.4)';
       ctx.beginPath();
       ctx.ellipse(px, playerProj.y + 4, 30, 10, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Skateboard
-      if (g.buffTimers.skateboard > 0) {
+      if ((g.buffTimers.skateboard || 0) > 0) {
         ctx.fillStyle = '#f97316';
         ctx.beginPath();
         ctx.roundRect(px - 28, py - 8, 56, 11, 5);
         ctx.fill();
       }
 
-      ctx.globalAlpha = g.buffTimers.cloak > 0 ? 0.45 : (g.invincibleTimer > 0 && g.frame % 6 < 3 ? 0.5 : 1);
+      const isCloaked = (g.buffTimers.cloak || 0) > 0;
+      ctx.globalAlpha = isCloaked ? 0.45 : (g.invincibleTimer > 0 && g.frame % 6 < 3 ? 0.5 : 1);
 
       if (sheetCanvas) {
-        const isPowerActive = g.isJumping || g.buffTimers.skateboard > 0 || g.buffTimers.chocolate > 0 || g.shield > 0;
+        const isPowerActive = g.isJumping || (g.buffTimers.skateboard || 0) > 0 || (g.buffTimers.chocolate || 0) > 0;
         const poseKey = isPowerActive ? 'power' : (Math.floor(g.frame / 7) % 2 === 0 ? 'run' : 'stand');
         const [nx, ny, nw, nh] = g.char.crops[poseKey];
         const sx = nx * sheetCanvas.width;
@@ -1070,7 +1272,7 @@ export default function App() {
         ctx.fillRect(px - 20, py - 80, 40, 80);
       }
 
-      if (g.shield > 0) {
+      if ((inventoryRef.current.helmet || 0) > 0) {
         ctx.strokeStyle = '#fbbf24';
         ctx.lineWidth = 3;
         ctx.beginPath();
@@ -1079,13 +1281,13 @@ export default function App() {
       }
       ctx.globalAlpha = 1;
 
-      // --- 6. DRAW CHASER BEHIND PLAYER ---
+      // --- 6. CHASER BEHIND PLAYER ---
       const chaserY = playerProj.y + (g.chaserDist * 0.78);
       if (chaserY < H + 70) {
         drawDetailedChaser(ctx, px, chaserY, 0.95, g.activeChaser, g.frame, true, false);
       }
 
-      // --- 7. SPARKLE PARTICLES ---
+      // --- 7. PARTICLES ---
       for (let i = g.particles.length - 1; i >= 0; i--) {
         const pt = g.particles[i];
         pt.x += pt.vx;
@@ -1101,24 +1303,9 @@ export default function App() {
       }
       ctx.globalAlpha = 1;
 
-      // --- 8. ANIME SPEED LINES ON EDGES WHEN FAST ---
-      if (currentSpeed >= 8.4) {
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
-        ctx.lineWidth = 2;
-        for (let s = 0; s < 8; s++) {
-          const side = s % 2 === 0 ? 1 : -1;
-          const sx = side === 1 ? W - 15 - (s * 6) : 15 + (s * 6);
-          const sy = ((g.frame * 24 + s * 110) % H);
-          ctx.beginPath();
-          ctx.moveTo(sx, sy);
-          ctx.lineTo(sx, sy + 55);
-          ctx.stroke();
-        }
-      }
-
       ctx.restore();
 
-      // --- 9. DIALOG SPEECH BUBBLE ---
+      // --- 8. DIALOG SPEECH BUBBLE ---
       if (g.dialogTimer > 0 && g.activeDialog) {
         const bw = Math.min(W - 30, 360);
         ctx.fillStyle = '#ffffff';
@@ -1134,7 +1321,7 @@ export default function App() {
         ctx.fillText(`${g.activeChaser.name}: "${g.activeDialog}"`, W / 2, horizonY + 38);
       }
 
-      // --- 10. MODERN HUD ---
+      // --- 9. MODERN HUD ---
       ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
       ctx.beginPath();
       ctx.roundRect(14, 14, 170, 60, 16);
@@ -1165,6 +1352,7 @@ export default function App() {
   }, [screen, highScore, sheets]);
 
   const currentChar = CHARACTERS.find(c => c.id === selectedCharId) || CHARACTERS[0];
+  const ownedActiveGadgets = SHOP_ITEMS.filter(it => it.active && (inventory[it.id] || 0) > 0);
 
   return (
     <div className="relative w-screen h-screen bg-gradient-to-b from-indigo-950 via-purple-900 to-slate-900 flex flex-col items-center justify-between overflow-hidden font-sans">
@@ -1341,7 +1529,7 @@ export default function App() {
           <div className="flex items-center justify-between mb-2">
             <div>
               <h2 className="text-xl font-black text-amber-300">পাওয়ার ও গ্যাজেট শপ</h2>
-              <p className="text-[11px] text-slate-300">কেনা পাওয়ার পরবর্তী দৌড়ে অটোমেটিক কাজ করবে!</p>
+              <p className="text-[11px] text-slate-300">কেনা পাওয়ার খেলার সময় বাটন চেপে ব্যবহার করো!</p>
             </div>
             <button onClick={() => setScreen('menu')} className="px-3 py-1.5 bg-slate-800 rounded-xl text-xs font-bold flex items-center gap-1">
               <Home className="w-4 h-4" /> হোম
@@ -1354,7 +1542,7 @@ export default function App() {
               return (
                 <div key={item.id} className="bg-slate-900/85 border border-white/10 p-3 rounded-2xl flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="text-2xl bg-slate-800 w-11 h-11 rounded-xl flex items-center justify-center">
+                    <div className="text-2xl bg-slate-800 w-11 h-11 rounded-xl flex items-center justify-center shrink-0">
                       {item.icon}
                     </div>
                     <div>
@@ -1387,10 +1575,30 @@ export default function App() {
         <div className={`relative w-full h-full ${paused ? 'cursor-auto' : 'cursor-none'}`}>
           <canvas ref={canvasRef} className="block w-full h-full touch-none" />
 
+          {/* Top-Center Live Power Countdown Bars */}
+          {activeTimersUI.length > 0 && (
+            <div className="fixed top-3 left-1/2 -translate-x-1/2 flex flex-col gap-1.5 z-20 pointer-events-none">
+              {activeTimersUI.map(p => (
+                <div key={p.id} className="bg-slate-900/85 border border-amber-400/50 px-3 py-1 rounded-full flex items-center gap-2 shadow-lg">
+                  <span className="text-sm">{p.icon}</span>
+                  <div className="w-24 h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-amber-400 to-emerald-400 transition-all" style={{ width: `${p.pct}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Top-Right Pause & Auto-Protection Badges */}
           <div className="fixed top-4 right-4 flex items-center gap-2 z-20 cursor-auto">
-            {activePowersUI.length > 0 && (
-              <div className="flex gap-1.5 bg-slate-900/80 px-3 py-1.5 rounded-full border border-amber-400/40">
-                {activePowersUI.map((ic, idx) => <span key={idx} className="text-base">{ic}</span>)}
+            {(inventory.helmet || 0) > 0 && (
+              <div className="bg-slate-900/85 border border-amber-400/50 px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1" title="Auto Helmet">
+                🪖 x{inventory.helmet}
+              </div>
+            )}
+            {(inventory.notebook || 0) > 0 && (
+              <div className="bg-slate-900/85 border border-sky-400/50 px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1" title="Auto Save Me">
+                📓 x{inventory.notebook}
               </div>
             )}
             <button
@@ -1401,6 +1609,26 @@ export default function App() {
               {paused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
             </button>
           </div>
+
+          {/* Left-Side On-Demand Active Gadget Buttons */}
+          {ownedActiveGadgets.length > 0 && (
+            <div className="fixed left-3 top-24 flex flex-col gap-2.5 z-20 cursor-auto">
+              {ownedActiveGadgets.map((item, idx) => (
+                <button
+                  key={item.id}
+                  onClick={() => activateGadget(item.id)}
+                  className="relative w-13 h-13 p-2.5 bg-slate-900/90 hover:bg-indigo-900 border-2 border-amber-400 rounded-2xl shadow-xl flex flex-col items-center justify-center active:scale-90 transition"
+                  title={`${item.name} (Press ${idx + 1})`}
+                >
+                  <span className="text-2xl leading-none">{item.icon}</span>
+                  <span className="absolute -top-1.5 -right-1.5 bg-emerald-500 text-slate-950 text-[10px] font-black px-1.5 py-0.2 rounded-full">
+                    x{inventory[item.id]}
+                  </span>
+                  <span className="text-[9px] text-amber-300 font-bold mt-0.5">[{idx + 1}]</span>
+                </button>
+              ))}
+            </div>
+          )}
 
           {paused && (
             <div className="fixed inset-0 bg-slate-950/75 backdrop-blur-sm z-30 flex flex-col items-center justify-center p-6 cursor-auto">
@@ -1424,42 +1652,49 @@ export default function App() {
 
           <div className="fixed bottom-3 w-full text-center pointer-events-none">
             <span className="bg-black/50 text-white/90 text-[11px] px-3.5 py-1 rounded-full">
-              সোয়াইপ বা অ্যারো কী: ⬅️ বামে | ➡️ ডানে | ⬆️ জাম্প | ⬇️ স্লাইড
+              সোয়াইপ বা অ্যারো কী: ⬅️ বামে | ➡️ ডানে | ⬆️ জাম্প | ⬇️ স্লাইড | বামে গ্যাজেট বাটন
             </span>
           </div>
         </div>
       )}
 
-      {/* --- GAME OVER SCREEN --- */}
+      {/* --- GAME OVER SCREEN WITH COLLAR-GRAB SCENE --- */}
       {screen === 'gameover' && (
-        <div className="flex-1 w-full max-w-md flex flex-col items-center justify-center px-6 text-center gap-4">
-          <div className="bg-rose-500/20 border-2 border-rose-500/50 rounded-3xl p-6 w-full shadow-2xl">
-            <span className="text-4xl">📚</span>
-            <h2 className="text-2xl font-black text-rose-300 mt-2">ধরা খেয়ে গেছ! এবার পড়তে বসো!</h2>
+        <div className="flex-1 w-full max-w-md flex flex-col items-center justify-center px-6 text-center gap-3 overflow-y-auto py-2">
+          <div className="bg-rose-500/20 border-2 border-rose-500/50 rounded-3xl p-4 w-full shadow-2xl">
+            <h2 className="text-xl font-black text-rose-300">ধরা খেয়ে গেছ! কলার ধরে টেনে নিচ্ছে!</h2>
+
+            {/* Subway Surfers style Caught Illustration */}
             {lastRunStats.caughtBy && (
-              <div className="mt-3 bg-slate-950/70 p-3 rounded-2xl border border-rose-400/30">
-                <p className="text-xs text-amber-300 font-bold">
-                  ধরেছেন: {lastRunStats.caughtBy.name} ({lastRunStats.caughtBy.weapon} {lastRunStats.caughtBy.emoji})
-                </p>
-                <p className="text-sm text-white italic mt-1">"{lastRunStats.caughtBy.dialog}"</p>
+              <div className="my-1">
+                <CaughtSceneCanvas char={currentChar} chaser={lastRunStats.caughtBy} sheets={sheets} />
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-3 mt-4">
-              <div className="bg-slate-900/90 p-3 rounded-2xl">
-                <p className="text-xs text-slate-400">দৌড়েছ</p>
-                <p className="text-xl font-black text-white">{lastRunStats.score}m</p>
+            {lastRunStats.caughtBy && (
+              <div className="bg-slate-950/75 p-2.5 rounded-2xl border border-rose-400/30">
+                <p className="text-xs text-amber-300 font-bold">
+                  ধরেছেন: {lastRunStats.caughtBy.name} ({lastRunStats.caughtBy.weapon} {lastRunStats.caughtBy.emoji})
+                </p>
+                <p className="text-xs text-white italic mt-1">"{lastRunStats.caughtBy.dialog}"</p>
               </div>
-              <div className="bg-slate-900/90 p-3 rounded-2xl">
-                <p className="text-xs text-slate-400">জমানো কয়েন</p>
-                <p className="text-xl font-black text-amber-400">+{lastRunStats.coinsEarned} 🪙</p>
+            )}
+
+            <div className="grid grid-cols-2 gap-3 mt-3">
+              <div className="bg-slate-900/90 p-2.5 rounded-2xl">
+                <p className="text-[11px] text-slate-400">দৌড়েছ</p>
+                <p className="text-lg font-black text-white">{lastRunStats.score}m</p>
+              </div>
+              <div className="bg-slate-900/90 p-2.5 rounded-2xl">
+                <p className="text-[11px] text-slate-400">জমানো কয়েন</p>
+                <p className="text-lg font-black text-amber-400">+{lastRunStats.coinsEarned} 🪙</p>
               </div>
             </div>
           </div>
 
           <button
             onClick={startGame}
-            className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-black text-lg flex items-center justify-center gap-2 shadow-lg active:scale-95 transition"
+            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-black text-lg flex items-center justify-center gap-2 shadow-lg active:scale-95 transition"
           >
             <RotateCcw className="w-5 h-5" /> আবার পালাও!
           </button>
