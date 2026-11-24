@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, ShoppingBag, Users, Volume2, VolumeX, Coins, Award, RotateCcw, Home, BookOpen, Pause, ShieldCheck } from 'lucide-react';
+import { Play, ShoppingBag, Users, Volume2, VolumeX, Coins, Award, RotateCcw, Home, BookOpen, Pause } from 'lucide-react';
 
 // --- SOUND ENGINE (Web Audio API) ---
 class SoundEngine {
@@ -225,34 +225,29 @@ function CaughtSceneCanvas({ char, chaser, sheets }) {
       const H = canvas.height;
       ctx.clearRect(0, 0, W, H);
 
-      // Spotlight Background
       const bgGrad = ctx.createRadialGradient(W / 2, H / 2, 10, W / 2, H / 2, 150);
       bgGrad.addColorStop(0, 'rgba(251, 191, 36, 0.25)');
       bgGrad.addColorStop(1, 'rgba(15, 23, 42, 0)');
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, W, H);
 
-      // Floor Shadow
       ctx.fillStyle = 'rgba(0,0,0,0.45)';
       ctx.beginPath();
       ctx.ellipse(W * 0.48, H - 14, 95, 12, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // --- 1. DRAW ANGRY CHASER (LEFT SIDE) ---
       const cx = W * 0.34;
       const cy = H - 18;
 
       ctx.save();
       ctx.translate(cx, cy);
 
-      // Chaser Legs
       ctx.fillStyle = '#0f172a';
       ctx.beginPath();
       ctx.roundRect(-18, -36, 13, 36, 6);
       ctx.roundRect(5, -36, 13, 36, 6);
       ctx.fill();
 
-      // Chaser Torso
       ctx.fillStyle = chaser.color;
       ctx.beginPath();
       ctx.roundRect(-28, -102, 56, 70, 16);
@@ -261,7 +256,6 @@ function CaughtSceneCanvas({ char, chaser, sheets }) {
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Left Arm (Swinging Weapon Angrily!)
       ctx.save();
       ctx.translate(-26, -92);
       ctx.rotate(Math.sin(frame * 0.18) * 0.35 - 0.5);
@@ -274,13 +268,11 @@ function CaughtSceneCanvas({ char, chaser, sheets }) {
       ctx.fillText(chaser.emoji, -6, -8);
       ctx.restore();
 
-      // Chaser Head
       ctx.fillStyle = '#fed7aa';
       ctx.beginPath();
       ctx.arc(0, -124, 23, 0, Math.PI * 2);
       ctx.fill();
 
-      // Hair / Bun
       ctx.fillStyle = '#111827';
       ctx.beginPath();
       ctx.arc(0, -129, 23.5, Math.PI, Math.PI * 2);
@@ -291,7 +283,6 @@ function CaughtSceneCanvas({ char, chaser, sheets }) {
         ctx.fill();
       }
 
-      // Angry Eyes & Eyebrows
       ctx.strokeStyle = '#111827';
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -307,13 +298,11 @@ function CaughtSceneCanvas({ char, chaser, sheets }) {
       ctx.arc(8, -122, 2.8, 0, Math.PI * 2);
       ctx.fill();
 
-      // Shouting Mouth
       ctx.fillStyle = '#991b1b';
       ctx.beginPath();
       ctx.arc(2, -111, 5.5, 0, Math.PI * 2);
       ctx.fill();
 
-      // Right Arm Extended Holding Character's Collar!
       const liftY = -92 + Math.sin(frame * 0.14) * 4;
       ctx.strokeStyle = '#fed7aa';
       ctx.lineWidth = 12;
@@ -323,7 +312,6 @@ function CaughtSceneCanvas({ char, chaser, sheets }) {
       ctx.lineTo(78, liftY);
       ctx.stroke();
 
-      // Fist gripping collar
       ctx.fillStyle = '#fed7aa';
       ctx.beginPath();
       ctx.arc(82, liftY, 9, 0, Math.PI * 2);
@@ -331,7 +319,6 @@ function CaughtSceneCanvas({ char, chaser, sheets }) {
 
       ctx.restore();
 
-      // --- 2. DRAW LIFTED & EMBARRASSED CHARACTER (DANGLING IN AIR!) ---
       const px = cx + 86;
       const py = cy + liftY + 12;
       const dangleAngle = Math.sin(frame * 0.14) * 0.08;
@@ -356,7 +343,6 @@ function CaughtSceneCanvas({ char, chaser, sheets }) {
         ctx.fillRect(-18, 0, 36, 75);
       }
 
-      // Sweat Drops & Embarrassed/Upset Reaction Icons!
       const sweatY = (frame * 0.8) % 18;
       ctx.fillStyle = '#38bdf8';
       ctx.beginPath();
@@ -364,7 +350,6 @@ function CaughtSceneCanvas({ char, chaser, sheets }) {
       ctx.arc(26, 18 + sweatY, 3, 0, Math.PI * 2);
       ctx.fill();
 
-      // Upset / Shame Emoji Bubble above Character
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
       ctx.arc(24, -14, 15, 0, Math.PI * 2);
@@ -588,6 +573,110 @@ function draw3DObstacle(ctx, x, y, scale, sub) {
   ctx.restore();
 }
 
+// --- SUBWAY SURFERS STYLE 3D SCHOOL BUS / COACHING VAN (WITH ROOFTOP RUN & RAMP!) ---
+function draw3DBus(ctx, frontProj, backProj, hasRamp, busColor = '#dc2626') {
+  const fw = 92 * frontProj.scale;
+  const fh = 82 * frontProj.scale;
+  const bw = 92 * backProj.scale;
+  const bh = 82 * backProj.scale;
+
+  const fx = frontProj.x;
+  const fy = frontProj.y;
+  const bx = backProj.x;
+  const by = backProj.y;
+
+  const roofColor = busColor === '#dc2626' ? '#f87171' : '#60a5fa';
+  const sideColor = busColor === '#dc2626' ? '#991b1b' : '#1e40af';
+
+  // 1. Side Wall (Left or Right depending on perspective)
+  ctx.fillStyle = sideColor;
+  ctx.beginPath();
+  if (fx >= bx) {
+    ctx.moveTo(fx - fw / 2, fy);
+    ctx.lineTo(bx - bw / 2, by);
+    ctx.lineTo(bx - bw / 2, by - bh);
+    ctx.lineTo(fx - fw / 2, fy - fh);
+  } else {
+    ctx.moveTo(fx + fw / 2, fy);
+    ctx.lineTo(bx + bw / 2, by);
+    ctx.lineTo(bx + bw / 2, by - bh);
+    ctx.lineTo(fx + fw / 2, fy - fh);
+  }
+  ctx.closePath();
+  ctx.fill();
+
+  // 2. Rooftop Deck (Players run on top of this!)
+  ctx.fillStyle = roofColor;
+  ctx.beginPath();
+  ctx.moveTo(fx - fw / 2, fy - fh);
+  ctx.lineTo(fx + fw / 2, fy - fh);
+  ctx.lineTo(bx + bw / 2, by - bh);
+  ctx.lineTo(bx - bw / 2, by - bh);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Roof Ribs
+  ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+  for (let t = 0.25; t < 1; t += 0.25) {
+    const rx1 = (fx - fw / 2) + ((bx - bw / 2) - (fx - fw / 2)) * t;
+    const rx2 = (fx + fw / 2) + ((bx + bw / 2) - (fx + fw / 2)) * t;
+    const ry = (fy - fh) + ((by - bh) - (fy - fh)) * t;
+    ctx.beginPath();
+    ctx.moveTo(rx1, ry);
+    ctx.lineTo(rx2, ry);
+    ctx.stroke();
+  }
+
+  // 3. Front Face OR Yellow Boarding Ramp
+  if (hasRamp) {
+    const rampLen = 48 * frontProj.scale;
+    ctx.fillStyle = '#facc15';
+    ctx.beginPath();
+    ctx.moveTo(fx - fw * 0.46, fy + rampLen * 0.45);
+    ctx.lineTo(fx + fw * 0.46, fy + rampLen * 0.45);
+    ctx.lineTo(fx + fw / 2, fy - fh);
+    ctx.lineTo(fx - fw / 2, fy - fh);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#ca8a04';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Upward Chevron Stripes on Ramp
+    ctx.fillStyle = '#854d0e';
+    ctx.font = `bold ${Math.max(10, Math.floor(14 * frontProj.scale))}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('⬆️ ছাদে ওঠো', fx, fy - fh * 0.35);
+  } else {
+    // Bus Front Windshield & Headlights
+    ctx.fillStyle = busColor;
+    ctx.beginPath();
+    ctx.roundRect(fx - fw / 2, fy - fh, fw, fh, 6 * frontProj.scale);
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Windshield
+    ctx.fillStyle = '#bae6fd';
+    ctx.fillRect(fx - fw * 0.4, fy - fh * 0.85, fw * 0.8, fh * 0.36);
+
+    // Destination Board ("কোচিং ভ্যান")
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(fx - fw * 0.35, fy - fh * 0.96, fw * 0.7, fh * 0.09);
+
+    // Headlights
+    ctx.fillStyle = '#fef08a';
+    ctx.beginPath();
+    ctx.arc(fx - fw * 0.32, fy - fh * 0.2, 6 * frontProj.scale, 0, Math.PI * 2);
+    ctx.arc(fx + fw * 0.32, fy - fh * 0.2, 6 * frontProj.scale, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
 export default function App() {
   const [coins, setCoins] = useState(() => Number(localStorage.getItem('pe_coins') || 30));
   const [highScore, setHighScore] = useState(() => Number(localStorage.getItem('pe_highscore') || 0));
@@ -702,7 +791,6 @@ export default function App() {
     showToast(`${item.icon} ${item.name} কেনা হয়েছে! (স্টক: ${(inventory[item.id] || 0) + 1})`);
   };
 
-  // --- ON-DEMAND POWER ACTIVATION ---
   const activateGadget = (itemId) => {
     const g = gameStateRef.current;
     if (!g || !g.running || pausedRef.current) return;
@@ -712,7 +800,6 @@ export default function App() {
     const item = SHOP_ITEMS.find(i => i.id === itemId);
     if (!item || !item.active) return;
 
-    // Deduct 1 from inventory
     setInventory(prev => ({
       ...prev,
       [itemId]: Math.max(0, (prev[itemId] || 0) - 1)
@@ -735,12 +822,17 @@ export default function App() {
     setPaused(false);
     const char = CHARACTERS.find(c => c.id === selectedCharId) || CHARACTERS[0];
 
-    // Comfortable, smooth running speed
     const baseSpeed = char.tier === 'Easy' ? 4.6 : char.tier === 'Medium' ? 5.4 : 6.2;
 
     const scenery = [];
     for (let i = 0; i < 16; i++) {
-      scenery.push({ z: i * 0.1, side: i % 2 === 0 ? -1 : 1, kind: i % 3 === 0 ? 'house' : i % 2 === 0 ? 'lamp' : 'tree' });
+      scenery.push({ z: i * 0.105, side: i % 2 === 0 ? -1 : 1, kind: i % 3 === 0 ? 'house' : i % 2 === 0 ? 'palm' : 'tree' });
+    }
+
+    // Overhead Steel Gantry Pillars & Hanging Wires
+    const gantries = [];
+    for (let i = 0; i < 4; i++) {
+      gantries.push({ z: 0.25 + i * 0.42 });
     }
 
     gameStateRef.current = {
@@ -749,6 +841,7 @@ export default function App() {
       lane: 1,
       visualLane: 1,
       y: 0,
+      groundLevel: 0, // 0 = road, 52 = bus roof
       vy: 0,
       isJumping: false,
       isSliding: false,
@@ -759,6 +852,7 @@ export default function App() {
       entities: [],
       particles: [],
       scenery,
+      gantries,
       spawnTimer: 0,
       chaserDist: 95,
       activeChaser: CHASERS[Math.floor(Math.random() * CHASERS.length)],
@@ -838,7 +932,6 @@ export default function App() {
       if (e.key === 'ArrowUp' || e.key === 'w' || e.key === ' ') doJump();
       if (e.key === 'ArrowDown' || e.key === 's') doSlide();
 
-      // Number keys 1-9 trigger owned active gadgets
       if (e.key >= '1' && e.key <= '9') {
         const ownedActives = SHOP_ITEMS.filter(it => it.active && (inventoryRef.current[it.id] || 0) > 0);
         const chosen = ownedActives[Number(e.key) - 1];
@@ -876,8 +969,7 @@ export default function App() {
 
       const W = canvas.width;
       const H = canvas.height;
-      // Extended Far Horizon (horizonY = 0.14) so road stretches deep into the distance!
-      const horizonY = H * 0.14;
+      const horizonY = H * 0.15;
       const groundY = H * 0.87;
       const MAX_Z = 1.65;
 
@@ -888,7 +980,6 @@ export default function App() {
       if (g.dialogTimer > 0) g.dialogTimer--;
       if (g.shakeTimer > 0) g.shakeTimer--;
 
-      // Update UI Progress Bars every 10 frames
       if (g.frame % 10 === 0) {
         const activeList = Object.entries(g.buffTimers)
           .filter(([, val]) => val > 0)
@@ -904,7 +995,6 @@ export default function App() {
         setActiveTimersUI(activeList);
       }
 
-      // Smooth, comfortable speed calculation
       const slowFactor = (g.buffTimers.watch || 0) > 0 ? 0.72 : 1.0;
       const boostAdd = (g.buffTimers.chocolate || 0) > 0 ? 3.2 : (g.buffTimers.skateboard || 0) > 0 ? 1.8 : 0;
       const currentSpeed = (g.baseSpeed + Math.min(2.2, g.distance / 4500) + boostAdd) * slowFactor;
@@ -915,43 +1005,75 @@ export default function App() {
       if (g.chaserDist < 110) g.chaserDist += chaserRecovery;
 
       g.visualLane += (g.lane - g.visualLane) * 0.24;
-      if (g.isJumping) {
+
+      // Check if player is currently standing on top of any Bus Roof
+      const onBusRoof = g.entities.some(
+        ent => ent.type === 'bus' && Math.abs(ent.lane - g.visualLane) < 0.42 && ent.z <= 0.06 && (ent.z + ent.length) >= -0.02 && g.y >= 38
+      );
+      const targetGround = onBusRoof ? 48 : 0;
+
+      if (g.isJumping || g.y > targetGround) {
         g.y += g.vy;
         const hasGlider = (g.buffTimers.glider || 0) > 0 || g.char.id === 'alif';
         const gravity = hasGlider && g.vy < 0 ? 0.38 : 0.70;
         g.vy -= gravity;
-        if (g.y <= 0) { g.y = 0; g.vy = 0; g.isJumping = false; }
+        if (g.y <= targetGround) {
+          g.y = targetGround;
+          g.vy = 0;
+          g.isJumping = false;
+        }
+      } else {
+        g.y = targetGround;
       }
+
       if (g.isSliding) {
         g.slideTimer--;
         if (g.slideTimer <= 0) g.isSliding = false;
       }
 
-      // Spawn Entities far down the extended road (z = 1.65)
+      // Spawn Entities (Coins, Curved Coin Arcs, 3D Buses with Ramps, Obstacles, Ambushers)
       g.spawnTimer -= currentSpeed;
       if (g.spawnTimer <= 0) {
-        g.spawnTimer = 145;
+        g.spawnTimer = 155;
         const lane = Math.floor(Math.random() * 3);
         const roll = Math.random();
 
-        if (roll < 0.46) {
-          for (let i = 0; i < 4; i++) g.entities.push({ type: 'coin', lane, z: MAX_Z + i * 0.08 });
-        } else if (roll < 0.74) {
+        if (roll < 0.28) {
+          // Straight Coin Line
+          for (let i = 0; i < 5; i++) g.entities.push({ type: 'coin', lane, z: MAX_Z + i * 0.075, elevation: 0 });
+        } else if (roll < 0.46) {
+          // Subway Surfers Curved Coin Arc (Jump to collect!)
+          for (let i = 0; i < 5; i++) {
+            const arcElev = Math.sin((i / 4) * Math.PI) * 52;
+            g.entities.push({ type: 'coin', lane, z: MAX_Z + i * 0.075, elevation: arcElev });
+          }
+        } else if (roll < 0.68) {
+          // 3D Coaching Van / School Bus (50% chance to have a Boarding Ramp + Rooftop Coins!)
+          const hasRamp = Math.random() < 0.55;
+          const busColor = Math.random() < 0.5 ? '#dc2626' : '#2563eb';
+          g.entities.push({ type: 'bus', lane, z: MAX_Z, length: 0.34, hasRamp, busColor });
+          for (let i = 0; i < 4; i++) {
+            g.entities.push({ type: 'coin', lane, z: MAX_Z + 0.05 + i * 0.075, elevation: 52 });
+          }
+          const safeLane = (lane + 1) % 3;
+          g.entities.push({ type: 'coin', lane: safeLane, z: MAX_Z + 0.1, elevation: 0 });
+        } else if (roll < 0.85) {
+          // Ambush Chaser
           const ambusher = CHASERS[Math.floor(Math.random() * CHASERS.length)];
           const isParent = g.char.parents.includes(ambusher.id);
           g.entities.push({ type: 'ambush', lane, z: MAX_Z, chaser: ambusher, isParent });
           const safeLane = (lane + 1) % 3;
-          g.entities.push({ type: 'coin', lane: safeLane, z: MAX_Z });
-          g.entities.push({ type: 'coin', lane: safeLane, z: MAX_Z + 0.09 });
+          g.entities.push({ type: 'coin', lane: safeLane, z: MAX_Z, elevation: 0 });
+          g.entities.push({ type: 'coin', lane: safeLane, z: MAX_Z + 0.08, elevation: 0 });
         } else {
+          // 3D Books or Study Table
           const sub = Math.random() < 0.5 ? 'books' : 'table';
           g.entities.push({ type: 'obstacle', sub, lane, z: MAX_Z });
           const safeLane = (lane + 2) % 3;
-          g.entities.push({ type: 'coin', lane: safeLane, z: MAX_Z + 0.03 });
+          g.entities.push({ type: 'coin', lane: safeLane, z: MAX_Z + 0.03, elevation: 0 });
         }
       }
 
-      // Deep Perspective Projection (z from MAX_Z=1.65 down to 0)
       const project = (laneIdx, z) => {
         const normZ = Math.min(1, Math.max(0, z / MAX_Z));
         const progress = 1 - normZ;
@@ -967,7 +1089,7 @@ export default function App() {
         ctx.translate((Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10);
       }
 
-      // --- 1. VIBRANT SKY & HORIZON ---
+      // --- 1. VIBRANT SKY, DISTANT TOWER & CLOUDS ---
       const stage = g.distance < 400 ? 0 : g.distance < 950 ? 1 : 2;
       const skyPalettes = [
         ['#0284c7', '#38bdf8', '#bae6fd'],
@@ -983,31 +1105,55 @@ export default function App() {
 
       ctx.fillStyle = '#fef9c3';
       ctx.beginPath();
-      ctx.arc(W * 0.82, horizonY * 0.45, 16, 0, Math.PI * 2);
+      ctx.arc(W * 0.84, horizonY * 0.42, 16, 0, Math.PI * 2);
       ctx.fill();
+
+      // Distant Iconic Pagoda / Monument Tower in Center Horizon (Subway Surfers Vibe)
+      ctx.fillStyle = stage === 2 ? 'rgba(124, 45, 18, 0.45)' : 'rgba(3, 105, 161, 0.35)';
+      const tx = W / 2;
+      for (let tier = 0; tier < 4; tier++) {
+        const tw = 44 - tier * 8;
+        const ty = horizonY - 12 - tier * 11;
+        ctx.beginPath();
+        ctx.moveTo(tx - tw, ty);
+        ctx.lineTo(tx, ty - 10);
+        ctx.lineTo(tx + tw, ty);
+        ctx.closePath();
+        ctx.fill();
+      }
 
       // City Skyline
       ctx.fillStyle = stage === 2 ? '#7c2d12' : '#1e293b';
       for (let bx = 0; bx < W; bx += 38) {
-        const bh = 10 + ((bx * 17) % 18);
+        const bh = 8 + ((bx * 17) % 16);
         ctx.fillRect(bx, horizonY - bh, 32, bh);
       }
 
-      // --- 2. GRASS & LONG RAILWAY TRACKS ---
+      // --- 2. GRASS, BOUNDARY WALLS & RAILWAY TRACKS ---
       const grassGrad = ctx.createLinearGradient(0, horizonY, 0, H);
       grassGrad.addColorStop(0, stage === 2 ? '#a16207' : '#16a34a');
       grassGrad.addColorStop(1, stage === 2 ? '#422006' : '#14532d');
       ctx.fillStyle = grassGrad;
       ctx.fillRect(0, horizonY, W, H - horizonY);
 
-      // Brick Borders
+      // Brick Boundary Walls flanking the tracks
+      ctx.beginPath();
+      ctx.moveTo(W / 2 - W * 0.082, horizonY);
+      ctx.lineTo(W / 2 + W * 0.082, horizonY);
+      ctx.lineTo(W / 2 + W * 0.53, H);
+      ctx.lineTo(W / 2 - W * 0.53, H);
+      ctx.closePath();
+      ctx.fillStyle = '#dc2626';
+      ctx.fill();
+
+      // Cream Concrete Curb inside Boundary Wall
       ctx.beginPath();
       ctx.moveTo(W / 2 - W * 0.072, horizonY);
       ctx.lineTo(W / 2 + W * 0.072, horizonY);
-      ctx.lineTo(W / 2 + W * 0.50, H);
-      ctx.lineTo(W / 2 - W * 0.50, H);
+      ctx.lineTo(W / 2 + W * 0.495, H);
+      ctx.lineTo(W / 2 - W * 0.495, H);
       ctx.closePath();
-      ctx.fillStyle = '#b91c1c';
+      ctx.fillStyle = '#fde68a';
       ctx.fill();
 
       // Main Track Bed
@@ -1034,12 +1180,12 @@ export default function App() {
         ctx.fillRect(W / 2 - sw / 2, p.y - sh / 2, sw, sh);
       }
 
-      // 6 Steel Rails
+      // 6 Shiny Steel Rails
       [-0.66, 0, 0.66].forEach(laneOffset => {
         [-0.14, 0.14].forEach(railOffset => {
           const topX = W / 2 + (W * 0.065) * (laneOffset + railOffset);
           const botX = W / 2 + (W * 0.47) * (laneOffset + railOffset);
-          ctx.strokeStyle = '#cbd5e1';
+          ctx.strokeStyle = '#e2e8f0';
           ctx.lineWidth = 2.5;
           ctx.beginPath();
           ctx.moveTo(topX, horizonY);
@@ -1048,19 +1194,34 @@ export default function App() {
         });
       });
 
-      // --- 3. ROADSIDE TREES, HOUSES & LAMPS ---
+      // --- 3. ROADSIDE PALM TREES, HOUSES & FLOWER POTS ---
       g.scenery.forEach(item => {
         item.z -= currentSpeed * 0.0022;
         if (item.z < -0.05) {
           item.z = MAX_Z;
           const r = Math.random();
-          item.kind = r < 0.35 ? 'house' : r < 0.65 ? 'lamp' : 'tree';
+          item.kind = r < 0.35 ? 'house' : r < 0.7 ? 'palm' : 'tree';
         }
         const p = project(1, Math.max(0, item.z));
-        const sx = W / 2 + item.side * (p.roadHalfW + 52 * p.scale);
+        const sx = W / 2 + item.side * (p.roadHalfW + 58 * p.scale);
         const sy = p.y;
 
-        if (item.kind === 'tree') {
+        if (item.kind === 'palm') {
+          // Tropical Palm Tree
+          ctx.strokeStyle = '#78350f';
+          ctx.lineWidth = 7 * p.scale;
+          ctx.beginPath();
+          ctx.moveTo(sx, sy);
+          ctx.quadraticCurveTo(sx + item.side * 8 * p.scale, sy - 42 * p.scale, sx, sy - 82 * p.scale);
+          ctx.stroke();
+
+          ctx.fillStyle = '#16a34a';
+          [-0.8, -0.3, 0.3, 0.8].forEach(ang => {
+            ctx.beginPath();
+            ctx.ellipse(sx + Math.sin(ang) * 22 * p.scale, sy - 82 * p.scale + Math.abs(ang) * 6 * p.scale, 22 * p.scale, 6 * p.scale, ang, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        } else if (item.kind === 'tree') {
           ctx.fillStyle = '#78350f';
           ctx.fillRect(sx - 5 * p.scale, sy - 38 * p.scale, 10 * p.scale, 38 * p.scale);
           ctx.fillStyle = '#15803d';
@@ -1071,37 +1232,31 @@ export default function App() {
           ctx.beginPath();
           ctx.arc(sx - 7 * p.scale, sy - 58 * p.scale, 16 * p.scale, 0, Math.PI * 2);
           ctx.fill();
-        } else if (item.kind === 'lamp') {
-          ctx.fillStyle = '#334155';
-          ctx.fillRect(sx - 3 * p.scale, sy - 75 * p.scale, 6 * p.scale, 75 * p.scale);
-          ctx.fillStyle = '#fef08a';
-          ctx.beginPath();
-          ctx.arc(sx - item.side * 8 * p.scale, sy - 75 * p.scale, 7 * p.scale, 0, Math.PI * 2);
-          ctx.fill();
         } else {
-          const hw = 58 * p.scale;
-          const hh = 44 * p.scale;
+          const hw = 62 * p.scale;
+          const hh = 46 * p.scale;
           ctx.fillStyle = '#fef3c7';
           ctx.fillRect(sx - hw / 2, sy - hh, hw, hh);
-          ctx.fillStyle = '#dc2626';
+          ctx.fillStyle = '#ea580c';
           ctx.beginPath();
           ctx.moveTo(sx - hw * 0.62, sy - hh);
-          ctx.lineTo(sx, sy - hh - 26 * p.scale);
+          ctx.lineTo(sx, sy - hh - 28 * p.scale);
           ctx.lineTo(sx + hw * 0.62, sy - hh);
           ctx.closePath();
           ctx.fill();
         }
       });
 
-      // --- 4. ENTITIES ---
+      // --- 4. ENTITIES (BUSES, OBSTACLES, AMBUSHERS, COINS) ---
       g.entities.sort((a, b) => b.z - a.z);
 
       for (let i = g.entities.length - 1; i >= 0; i--) {
         const ent = g.entities[i];
         ent.z -= currentSpeed * 0.0022;
 
-        if ((g.buffTimers.converter || 0) > 0 && (ent.type === 'obstacle' || ent.type === 'ambush')) {
+        if ((g.buffTimers.converter || 0) > 0 && (ent.type === 'obstacle' || ent.type === 'ambush' || ent.type === 'bus')) {
           ent.type = 'coin';
+          ent.elevation = 0;
         }
         const hasMagnet = (g.buffTimers.magnet || 0) > 0 || g.char.id === 'tanha';
         if (ent.type === 'coin' && hasMagnet && ent.z < 0.65 && ent.z > 0) {
@@ -1110,9 +1265,13 @@ export default function App() {
 
         const p = project(ent.lane, Math.max(0, ent.z));
 
-        if (ent.type === 'coin') {
+        if (ent.type === 'bus') {
+          const backP = project(ent.lane, Math.min(MAX_Z, Math.max(0, ent.z + ent.length)));
+          draw3DBus(ctx, p, backP, ent.hasRamp, ent.busColor);
+        } else if (ent.type === 'coin') {
           const r = 17 * p.scale;
-          const cy = p.y - r - 10 * p.scale + Math.sin(g.frame * 0.15 + i) * 3 * p.scale;
+          const elevOffset = (ent.elevation || 0) * 1.45 * p.scale;
+          const cy = p.y - r - 10 * p.scale - elevOffset + Math.sin(g.frame * 0.15 + i) * 3 * p.scale;
           const spinWidth = Math.max(0.35, Math.abs(Math.cos(g.frame * 0.1 + i)));
 
           ctx.fillStyle = 'rgba(250, 204, 21, 0.32)';
@@ -1151,18 +1310,63 @@ export default function App() {
           }
         }
 
-        // Collision Detection
-        if (ent.z <= 0.06 && ent.z >= -0.05) {
-          const sameLane = Math.abs(ent.lane - g.visualLane) < 0.42;
+        // --- COLLISION & RAMP BOARDING ---
+        const sameLane = Math.abs(ent.lane - g.visualLane) < 0.42;
 
-          if (sameLane && ent.type === 'coin') {
-            sfx.coin();
-            const mult = ((g.buffTimers.doubleCoin || 0) > 0 || g.char.id === 'lamia') ? 2 : 1;
-            const bonus = g.char.id === 'jillu' ? 2 : 1;
-            g.runCoins += mult * bonus;
-            spawnParticles(p.x, p.y - 25, '#facc15', 10);
+        // Bus Boarding Ramp & Roof Check
+        if (ent.type === 'bus' && sameLane && ent.z <= 0.10 && (ent.z + ent.length) >= 0) {
+          if (ent.hasRamp && ent.z > -0.02 && g.y < 48) {
+            // Smoothly climb the ramp onto the bus roof!
+            g.y = 50;
+            g.vy = 0;
+            g.isJumping = false;
+          } else if (g.y < 38 && ent.z <= 0.05 && ent.z >= -0.04) {
+            // Hit front of bus without jumping or using ramp
             g.entities.splice(i, 1);
-            continue;
+            spawnParticles(p.x, p.y - 45, '#ef4444', 20);
+            g.shakeTimer = 15;
+
+            if (g.invincibleTimer > 0 || (g.buffTimers.cloak || 0) > 0 || (g.buffTimers.chocolate || 0) > 0) continue;
+            if ((g.buffTimers.skateboard || 0) > 0) { g.buffTimers.skateboard = 0; g.invincibleTimer = 60; sfx.stumble(); continue; }
+            if ((inventoryRef.current.helmet || 0) > 0) {
+              setInventory(prev => ({ ...prev, helmet: Math.max(0, (prev.helmet || 0) - 1) }));
+              g.invincibleTimer = 75;
+              sfx.powerup();
+              showToast('🪖 সেফটি হেলমেট ধাক্কা সামলে নিলো!');
+              continue;
+            }
+            if ((inventoryRef.current.notebook || 0) > 0) {
+              setInventory(prev => ({ ...prev, notebook: Math.max(0, (prev.notebook || 0) - 1) }));
+              g.invincibleTimer = 95;
+              g.chaserDist = 110;
+              sfx.powerup();
+              showToast('📓 ফাঁকা খাতা দেখিয়ে বেঁচে গেলে!');
+              continue;
+            }
+            g.running = false;
+            sfx.stopBgm();
+            sfx.gameover();
+            const finalScore = Math.floor(g.distance);
+            setCoins(c => c + g.runCoins);
+            if (finalScore > highScore) setHighScore(finalScore);
+            setLastRunStats({ score: finalScore, coinsEarned: g.runCoins, caughtBy: g.activeChaser });
+            setScreen('gameover');
+            return;
+          }
+        }
+
+        if (ent.z <= 0.06 && ent.z >= -0.05 && ent.type !== 'bus') {
+          if (sameLane && ent.type === 'coin') {
+            const heightDiff = Math.abs(g.y - (ent.elevation || 0));
+            if (heightDiff < 42 || hasMagnet) {
+              sfx.coin();
+              const mult = ((g.buffTimers.doubleCoin || 0) > 0 || g.char.id === 'lamia') ? 2 : 1;
+              const bonus = g.char.id === 'jillu' ? 2 : 1;
+              g.runCoins += mult * bonus;
+              spawnParticles(p.x, p.y - 25 - (ent.elevation || 0), '#facc15', 10);
+              g.entities.splice(i, 1);
+              continue;
+            }
           }
 
           if (sameLane && (ent.type === 'obstacle' || ent.type === 'ambush')) {
@@ -1177,7 +1381,6 @@ export default function App() {
 
               if (g.invincibleTimer > 0 || (g.buffTimers.cloak || 0) > 0 || (g.buffTimers.chocolate || 0) > 0) continue;
 
-              // Skateboard absorbs 1 hit
               if ((g.buffTimers.skateboard || 0) > 0) {
                 g.buffTimers.skateboard = 0;
                 g.invincibleTimer = 60;
@@ -1186,7 +1389,6 @@ export default function App() {
                 continue;
               }
 
-              // Auto Safety Helmet from Inventory
               if ((inventoryRef.current.helmet || 0) > 0) {
                 setInventory(prev => ({ ...prev, helmet: Math.max(0, (prev.helmet || 0) - 1) }));
                 g.invincibleTimer = 75;
@@ -1203,7 +1405,6 @@ export default function App() {
                 g.dialogTimer = 130;
                 g.invincibleTimer = 45;
               } else {
-                // Auto Save-Me Notebook from Inventory
                 if ((inventoryRef.current.notebook || 0) > 0) {
                   setInventory(prev => ({ ...prev, notebook: Math.max(0, (prev.notebook || 0) - 1) }));
                   g.invincibleTimer = 95;
@@ -1229,7 +1430,8 @@ export default function App() {
             }
           }
         }
-        if (ent.z < -0.1) g.entities.splice(i, 1);
+        const despawnZ = ent.type === 'bus' ? -ent.length - 0.1 : -0.1;
+        if (ent.z < despawnZ) g.entities.splice(i, 1);
       }
 
       // --- 5. DRAW PLAYER CHARACTER ---
@@ -1240,7 +1442,7 @@ export default function App() {
 
       ctx.fillStyle = 'rgba(0,0,0,0.4)';
       ctx.beginPath();
-      ctx.ellipse(px, playerProj.y + 4, 30, 10, 0, 0, Math.PI * 2);
+      ctx.ellipse(px, playerProj.y - (onBusRoof ? 48 * 1.6 : 0) + 4, 30, 10, 0, 0, Math.PI * 2);
       ctx.fill();
 
       if ((g.buffTimers.skateboard || 0) > 0) {
@@ -1281,13 +1483,57 @@ export default function App() {
       }
       ctx.globalAlpha = 1;
 
-      // --- 6. CHASER BEHIND PLAYER ---
+      // --- 6. OVERHEAD STEEL PILLARS, CROSS-BEAMS & HANGING ELECTRIC WIRES ---
+      g.gantries.sort((a, b) => b.z - a.z);
+      g.gantries.forEach((gan, idx) => {
+        gan.z -= currentSpeed * 0.0022;
+        if (gan.z < -0.05) gan.z = MAX_Z;
+
+        const gp = project(1, Math.max(0, gan.z));
+        const leftX = W / 2 - gp.roadHalfW * 1.05;
+        const rightX = W / 2 + gp.roadHalfW * 1.05;
+        const beamY = gp.y - 195 * gp.scale;
+        const poleW = Math.max(2, 7 * gp.scale);
+
+        // Left & Right Steel Pillars
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(leftX - poleW / 2, beamY, poleW, gp.y - beamY);
+        ctx.fillRect(rightX - poleW / 2, beamY, poleW, gp.y - beamY);
+
+        // Overhead Cross-Beam
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(leftX, beamY, rightX - leftX, Math.max(2, 6 * gp.scale));
+
+        // Catenary Electric Wires connecting to the next Gantry ahead
+        const nextGan = g.gantries[(idx + 1) % g.gantries.length];
+        if (nextGan && nextGan.z > gan.z) {
+          const np = project(1, Math.max(0, nextGan.z));
+          const nLeftX = W / 2 - np.roadHalfW * 1.05;
+          const nRightX = W / 2 + np.roadHalfW * 1.05;
+          const nBeamY = np.y - 195 * np.scale;
+
+          ctx.strokeStyle = 'rgba(15, 23, 42, 0.72)';
+          ctx.lineWidth = Math.max(1, 2.2 * gp.scale);
+          [0.2, 0.4, 0.6, 0.8].forEach(frac => {
+            const x1 = leftX + (rightX - leftX) * frac;
+            const x2 = nLeftX + (nRightX - nLeftX) * frac;
+            const midX = (x1 + x2) / 2;
+            const midY = (beamY + nBeamY) / 2 + 16 * gp.scale;
+            ctx.beginPath();
+            ctx.moveTo(x1, beamY);
+            ctx.quadraticCurveTo(midX, midY, x2, nBeamY);
+            ctx.stroke();
+          });
+        }
+      });
+
+      // --- 7. CHASER BEHIND PLAYER ---
       const chaserY = playerProj.y + (g.chaserDist * 0.78);
       if (chaserY < H + 70) {
         drawDetailedChaser(ctx, px, chaserY, 0.95, g.activeChaser, g.frame, true, false);
       }
 
-      // --- 7. PARTICLES ---
+      // --- 8. PARTICLES ---
       for (let i = g.particles.length - 1; i >= 0; i--) {
         const pt = g.particles[i];
         pt.x += pt.vx;
@@ -1305,7 +1551,7 @@ export default function App() {
 
       ctx.restore();
 
-      // --- 8. DIALOG SPEECH BUBBLE ---
+      // --- 9. DIALOG SPEECH BUBBLE ---
       if (g.dialogTimer > 0 && g.activeDialog) {
         const bw = Math.min(W - 30, 360);
         ctx.fillStyle = '#ffffff';
@@ -1321,7 +1567,7 @@ export default function App() {
         ctx.fillText(`${g.activeChaser.name}: "${g.activeDialog}"`, W / 2, horizonY + 38);
       }
 
-      // --- 9. MODERN HUD ---
+      // --- 10. MODERN HUD ---
       ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
       ctx.beginPath();
       ctx.roundRect(14, 14, 170, 60, 16);
@@ -1575,7 +1821,6 @@ export default function App() {
         <div className={`relative w-full h-full ${paused ? 'cursor-auto' : 'cursor-none'}`}>
           <canvas ref={canvasRef} className="block w-full h-full touch-none" />
 
-          {/* Top-Center Live Power Countdown Bars */}
           {activeTimersUI.length > 0 && (
             <div className="fixed top-3 left-1/2 -translate-x-1/2 flex flex-col gap-1.5 z-20 pointer-events-none">
               {activeTimersUI.map(p => (
@@ -1589,7 +1834,6 @@ export default function App() {
             </div>
           )}
 
-          {/* Top-Right Pause & Auto-Protection Badges */}
           <div className="fixed top-4 right-4 flex items-center gap-2 z-20 cursor-auto">
             {(inventory.helmet || 0) > 0 && (
               <div className="bg-slate-900/85 border border-amber-400/50 px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1" title="Auto Helmet">
@@ -1610,7 +1854,6 @@ export default function App() {
             </button>
           </div>
 
-          {/* Left-Side On-Demand Active Gadget Buttons */}
           {ownedActiveGadgets.length > 0 && (
             <div className="fixed left-3 top-24 flex flex-col gap-2.5 z-20 cursor-auto">
               {ownedActiveGadgets.map((item, idx) => (
@@ -1652,7 +1895,7 @@ export default function App() {
 
           <div className="fixed bottom-3 w-full text-center pointer-events-none">
             <span className="bg-black/50 text-white/90 text-[11px] px-3.5 py-1 rounded-full">
-              সোয়াইপ বা অ্যারো কী: ⬅️ বামে | ➡️ ডানে | ⬆️ জাম্প | ⬇️ স্লাইড | বামে গ্যাজেট বাটন
+              সোয়াইপ বা অ্যারো কী: ⬅️ বামে | ➡️ ডানে | ⬆️ জাম্প | ⬇️ স্লাইড | হলুদ র‍্যাম্প দিয়ে বাসের ছাদে ওঠো!
             </span>
           </div>
         </div>
@@ -1664,7 +1907,6 @@ export default function App() {
           <div className="bg-rose-500/20 border-2 border-rose-500/50 rounded-3xl p-4 w-full shadow-2xl">
             <h2 className="text-xl font-black text-rose-300">ধরা খেয়ে গেছ! কলার ধরে টেনে নিচ্ছে!</h2>
 
-            {/* Subway Surfers style Caught Illustration */}
             {lastRunStats.caughtBy && (
               <div className="my-1">
                 <CaughtSceneCanvas char={currentChar} chaser={lastRunStats.caughtBy} sheets={sheets} />
