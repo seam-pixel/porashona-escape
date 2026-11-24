@@ -383,7 +383,7 @@ function drawDetailedChaser(ctx, x, y, scale, chaser, frame, isParent = false, s
   const bob = Math.sin(frame * 0.35) * 4;
   const legSwing = Math.sin(frame * 0.35) * 11;
 
-  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
   ctx.beginPath();
   ctx.ellipse(0, 2, 28, 9, 0, 0, Math.PI * 2);
   ctx.fill();
@@ -502,7 +502,7 @@ function draw3DObstacle(ctx, x, y, scale, sub) {
   ctx.translate(x, y);
   ctx.scale(scale, scale);
 
-  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
   ctx.beginPath();
   ctx.ellipse(0, 2, 42, 10, 0, 0, Math.PI * 2);
   ctx.fill();
@@ -573,7 +573,7 @@ function draw3DObstacle(ctx, x, y, scale, sub) {
   ctx.restore();
 }
 
-// --- SUBWAY SURFERS STYLE 3D SCHOOL BUS / COACHING VAN (WITH ROOFTOP RUN & RAMP!) ---
+// --- SUBWAY SURFERS STYLE 3D SCHOOL BUS / COACHING VAN ---
 function draw3DBus(ctx, frontProj, backProj, hasRamp, busColor = '#dc2626') {
   const fw = 92 * frontProj.scale;
   const fh = 82 * frontProj.scale;
@@ -588,7 +588,6 @@ function draw3DBus(ctx, frontProj, backProj, hasRamp, busColor = '#dc2626') {
   const roofColor = busColor === '#dc2626' ? '#f87171' : '#60a5fa';
   const sideColor = busColor === '#dc2626' ? '#991b1b' : '#1e40af';
 
-  // 1. Side Wall (Left or Right depending on perspective)
   ctx.fillStyle = sideColor;
   ctx.beginPath();
   if (fx >= bx) {
@@ -605,7 +604,6 @@ function draw3DBus(ctx, frontProj, backProj, hasRamp, busColor = '#dc2626') {
   ctx.closePath();
   ctx.fill();
 
-  // 2. Rooftop Deck (Players run on top of this!)
   ctx.fillStyle = roofColor;
   ctx.beginPath();
   ctx.moveTo(fx - fw / 2, fy - fh);
@@ -618,7 +616,6 @@ function draw3DBus(ctx, frontProj, backProj, hasRamp, busColor = '#dc2626') {
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  // Roof Ribs
   ctx.strokeStyle = 'rgba(0,0,0,0.18)';
   for (let t = 0.25; t < 1; t += 0.25) {
     const rx1 = (fx - fw / 2) + ((bx - bw / 2) - (fx - fw / 2)) * t;
@@ -630,7 +627,6 @@ function draw3DBus(ctx, frontProj, backProj, hasRamp, busColor = '#dc2626') {
     ctx.stroke();
   }
 
-  // 3. Front Face OR Yellow Boarding Ramp
   if (hasRamp) {
     const rampLen = 48 * frontProj.scale;
     ctx.fillStyle = '#facc15';
@@ -645,13 +641,11 @@ function draw3DBus(ctx, frontProj, backProj, hasRamp, busColor = '#dc2626') {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Upward Chevron Stripes on Ramp
     ctx.fillStyle = '#854d0e';
     ctx.font = `bold ${Math.max(10, Math.floor(14 * frontProj.scale))}px sans-serif`;
     ctx.textAlign = 'center';
     ctx.fillText('⬆️ ছাদে ওঠো', fx, fy - fh * 0.35);
   } else {
-    // Bus Front Windshield & Headlights
     ctx.fillStyle = busColor;
     ctx.beginPath();
     ctx.roundRect(fx - fw / 2, fy - fh, fw, fh, 6 * frontProj.scale);
@@ -660,15 +654,12 @@ function draw3DBus(ctx, frontProj, backProj, hasRamp, busColor = '#dc2626') {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Windshield
     ctx.fillStyle = '#bae6fd';
     ctx.fillRect(fx - fw * 0.4, fy - fh * 0.85, fw * 0.8, fh * 0.36);
 
-    // Destination Board ("কোচিং ভ্যান")
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(fx - fw * 0.35, fy - fh * 0.96, fw * 0.7, fh * 0.09);
 
-    // Headlights
     ctx.fillStyle = '#fef08a';
     ctx.beginPath();
     ctx.arc(fx - fw * 0.32, fy - fh * 0.2, 6 * frontProj.scale, 0, Math.PI * 2);
@@ -829,7 +820,6 @@ export default function App() {
       scenery.push({ z: i * 0.105, side: i % 2 === 0 ? -1 : 1, kind: i % 3 === 0 ? 'house' : i % 2 === 0 ? 'palm' : 'tree' });
     }
 
-    // Overhead Steel Gantry Pillars & Hanging Wires
     const gantries = [];
     for (let i = 0; i < 4; i++) {
       gantries.push({ z: 0.25 + i * 0.42 });
@@ -841,7 +831,7 @@ export default function App() {
       lane: 1,
       visualLane: 1,
       y: 0,
-      groundLevel: 0, // 0 = road, 52 = bus roof
+      groundLevel: 0,
       vy: 0,
       isJumping: false,
       isSliding: false,
@@ -1006,7 +996,6 @@ export default function App() {
 
       g.visualLane += (g.lane - g.visualLane) * 0.24;
 
-      // Check if player is currently standing on top of any Bus Roof
       const onBusRoof = g.entities.some(
         ent => ent.type === 'bus' && Math.abs(ent.lane - g.visualLane) < 0.42 && ent.z <= 0.06 && (ent.z + ent.length) >= -0.02 && g.y >= 38
       );
@@ -1031,7 +1020,7 @@ export default function App() {
         if (g.slideTimer <= 0) g.isSliding = false;
       }
 
-      // Spawn Entities (Coins, Curved Coin Arcs, 3D Buses with Ramps, Obstacles, Ambushers)
+      // Spawn Entities
       g.spawnTimer -= currentSpeed;
       if (g.spawnTimer <= 0) {
         g.spawnTimer = 155;
@@ -1039,16 +1028,13 @@ export default function App() {
         const roll = Math.random();
 
         if (roll < 0.28) {
-          // Straight Coin Line
           for (let i = 0; i < 5; i++) g.entities.push({ type: 'coin', lane, z: MAX_Z + i * 0.075, elevation: 0 });
         } else if (roll < 0.46) {
-          // Subway Surfers Curved Coin Arc (Jump to collect!)
           for (let i = 0; i < 5; i++) {
             const arcElev = Math.sin((i / 4) * Math.PI) * 52;
             g.entities.push({ type: 'coin', lane, z: MAX_Z + i * 0.075, elevation: arcElev });
           }
         } else if (roll < 0.68) {
-          // 3D Coaching Van / School Bus (50% chance to have a Boarding Ramp + Rooftop Coins!)
           const hasRamp = Math.random() < 0.55;
           const busColor = Math.random() < 0.5 ? '#dc2626' : '#2563eb';
           g.entities.push({ type: 'bus', lane, z: MAX_Z, length: 0.34, hasRamp, busColor });
@@ -1058,7 +1044,6 @@ export default function App() {
           const safeLane = (lane + 1) % 3;
           g.entities.push({ type: 'coin', lane: safeLane, z: MAX_Z + 0.1, elevation: 0 });
         } else if (roll < 0.85) {
-          // Ambush Chaser
           const ambusher = CHASERS[Math.floor(Math.random() * CHASERS.length)];
           const isParent = g.char.parents.includes(ambusher.id);
           g.entities.push({ type: 'ambush', lane, z: MAX_Z, chaser: ambusher, isParent });
@@ -1066,7 +1051,6 @@ export default function App() {
           g.entities.push({ type: 'coin', lane: safeLane, z: MAX_Z, elevation: 0 });
           g.entities.push({ type: 'coin', lane: safeLane, z: MAX_Z + 0.08, elevation: 0 });
         } else {
-          // 3D Books or Study Table
           const sub = Math.random() < 0.5 ? 'books' : 'table';
           g.entities.push({ type: 'obstacle', sub, lane, z: MAX_Z });
           const safeLane = (lane + 2) % 3;
@@ -1089,7 +1073,7 @@ export default function App() {
         ctx.translate((Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10);
       }
 
-      // --- 1. VIBRANT SKY, DISTANT TOWER & CLOUDS ---
+      // --- 1. EYE-FRIENDLY SKY & HORIZON ---
       const stage = g.distance < 400 ? 0 : g.distance < 950 ? 1 : 2;
       const skyPalettes = [
         ['#0284c7', '#38bdf8', '#bae6fd'],
@@ -1108,8 +1092,8 @@ export default function App() {
       ctx.arc(W * 0.84, horizonY * 0.42, 16, 0, Math.PI * 2);
       ctx.fill();
 
-      // Distant Iconic Pagoda / Monument Tower in Center Horizon (Subway Surfers Vibe)
-      ctx.fillStyle = stage === 2 ? 'rgba(124, 45, 18, 0.45)' : 'rgba(3, 105, 161, 0.35)';
+      // Distant Iconic Pagoda / Monument Tower
+      ctx.fillStyle = stage === 2 ? 'rgba(124, 45, 18, 0.35)' : 'rgba(3, 105, 161, 0.28)';
       const tx = W / 2;
       for (let tier = 0; tier < 4; tier++) {
         const tw = 44 - tier * 8;
@@ -1122,43 +1106,34 @@ export default function App() {
         ctx.fill();
       }
 
-      // City Skyline
-      ctx.fillStyle = stage === 2 ? '#7c2d12' : '#1e293b';
+      // Soft City Skyline
+      ctx.fillStyle = stage === 2 ? 'rgba(124, 45, 18, 0.65)' : 'rgba(30, 41, 59, 0.6)';
       for (let bx = 0; bx < W; bx += 38) {
         const bh = 8 + ((bx * 17) % 16);
         ctx.fillRect(bx, horizonY - bh, 32, bh);
       }
 
-      // --- 2. GRASS, BOUNDARY WALLS & RAILWAY TRACKS ---
+      // --- 2. SOFT GREEN GRASS & SMOOTH ASPHALT ROAD (EYE-COMFORTABLE) ---
       const grassGrad = ctx.createLinearGradient(0, horizonY, 0, H);
-      grassGrad.addColorStop(0, stage === 2 ? '#a16207' : '#16a34a');
+      grassGrad.addColorStop(0, stage === 2 ? '#854d0e' : '#15803d');
       grassGrad.addColorStop(1, stage === 2 ? '#422006' : '#14532d');
       ctx.fillStyle = grassGrad;
       ctx.fillRect(0, horizonY, W, H - horizonY);
 
-      // Brick Boundary Walls flanking the tracks
+      // Soft Concrete Sidewalk Curbs (No harsh red/yellow flicker!)
       ctx.beginPath();
-      ctx.moveTo(W / 2 - W * 0.082, horizonY);
-      ctx.lineTo(W / 2 + W * 0.082, horizonY);
-      ctx.lineTo(W / 2 + W * 0.53, H);
-      ctx.lineTo(W / 2 - W * 0.53, H);
+      ctx.moveTo(W / 2 - W * 0.074, horizonY);
+      ctx.lineTo(W / 2 + W * 0.074, horizonY);
+      ctx.lineTo(W / 2 + W * 0.50, H);
+      ctx.lineTo(W / 2 - W * 0.50, H);
       ctx.closePath();
-      ctx.fillStyle = '#dc2626';
+      ctx.fillStyle = '#94a3b8';
       ctx.fill();
 
-      // Cream Concrete Curb inside Boundary Wall
-      ctx.beginPath();
-      ctx.moveTo(W / 2 - W * 0.072, horizonY);
-      ctx.lineTo(W / 2 + W * 0.072, horizonY);
-      ctx.lineTo(W / 2 + W * 0.495, H);
-      ctx.lineTo(W / 2 - W * 0.495, H);
-      ctx.closePath();
-      ctx.fillStyle = '#fde68a';
-      ctx.fill();
-
-      // Main Track Bed
+      // Smooth Pitch-Black / Soft-Slate Asphalt Road Bed
       const roadGrad = ctx.createLinearGradient(0, horizonY, 0, H);
-      roadGrad.addColorStop(0, '#475569');
+      roadGrad.addColorStop(0, '#64748b');
+      roadGrad.addColorStop(0.25, '#334155');
       roadGrad.addColorStop(1, '#1e293b');
       ctx.beginPath();
       ctx.moveTo(W / 2 - W * 0.065, horizonY);
@@ -1169,32 +1144,46 @@ export default function App() {
       ctx.fillStyle = roadGrad;
       ctx.fill();
 
-      // Wooden Sleepers
-      const sleeperStep = 0.065;
-      const sleeperOffset = (g.frame * currentSpeed * 0.0022) % sleeperStep;
-      for (let z = MAX_Z - sleeperOffset; z > 0; z -= sleeperStep) {
-        const p = project(1, z);
-        const sw = p.roadHalfW * 1.88;
-        const sh = Math.max(1.5, 6 * p.scale);
-        ctx.fillStyle = '#78350f';
-        ctx.fillRect(W / 2 - sw / 2, p.y - sh / 2, sw, sh);
-      }
-
-      // 6 Shiny Steel Rails
-      [-0.66, 0, 0.66].forEach(laneOffset => {
-        [-0.14, 0.14].forEach(railOffset => {
-          const topX = W / 2 + (W * 0.065) * (laneOffset + railOffset);
-          const botX = W / 2 + (W * 0.47) * (laneOffset + railOffset);
-          ctx.strokeStyle = '#e2e8f0';
-          ctx.lineWidth = 2.5;
-          ctx.beginPath();
-          ctx.moveTo(topX, horizonY);
-          ctx.lineTo(botX, H);
-          ctx.stroke();
-        });
+      // Subtle Side Road Edge Lines
+      [-0.92, 0.92].forEach(edge => {
+        ctx.strokeStyle = 'rgba(248, 250, 252, 0.35)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(W / 2 + (W * 0.065) * edge, horizonY);
+        ctx.lineTo(W / 2 + (W * 0.47) * edge, H);
+        ctx.stroke();
       });
 
-      // --- 3. ROADSIDE PALM TREES, HOUSES & FLOWER POTS ---
+      // Smooth Spaced Asphalt Lane Divider Dashes (Gentle motion, zero eye strain!)
+      const dashCycle = 0.24;
+      const dashOffset = (g.frame * currentSpeed * 0.0022) % dashCycle;
+      for (let z = MAX_Z - dashOffset; z > 0.02; z -= dashCycle) {
+        const zStart = Math.min(MAX_Z, z);
+        const zEnd = Math.max(0.01, z - 0.09);
+        const p1 = project(1, zStart);
+        const p2 = project(1, zEnd);
+
+        // Fade dashes near the distant horizon so there's zero flickering
+        const alpha = Math.min(0.45, Math.max(0, (1 - zStart / MAX_Z) * 0.7));
+        ctx.strokeStyle = `rgba(241, 245, 249, ${alpha})`;
+        ctx.lineWidth = Math.max(1.5, 4 * p2.scale);
+
+        [-0.33, 0.33].forEach(divOffset => {
+          ctx.beginPath();
+          ctx.moveTo(W / 2 + p1.roadHalfW * divOffset, p1.y);
+          ctx.lineTo(W / 2 + p2.roadHalfW * divOffset, p2.y);
+          ctx.stroke();
+        });
+      }
+
+      // Soft Atmospheric Horizon Mist (Smoothly blends far road into sky)
+      const mistGrad = ctx.createLinearGradient(0, horizonY - 4, 0, horizonY + (H - horizonY) * 0.22);
+      mistGrad.addColorStop(0, skyPalettes[stage][2]);
+      mistGrad.addColorStop(1, 'rgba(186, 230, 253, 0)');
+      ctx.fillStyle = mistGrad;
+      ctx.fillRect(0, horizonY - 4, W, (H - horizonY) * 0.22);
+
+      // --- 3. ROADSIDE PALM TREES, HOUSES & TREES ---
       g.scenery.forEach(item => {
         item.z -= currentSpeed * 0.0022;
         if (item.z < -0.05) {
@@ -1207,7 +1196,6 @@ export default function App() {
         const sy = p.y;
 
         if (item.kind === 'palm') {
-          // Tropical Palm Tree
           ctx.strokeStyle = '#78350f';
           ctx.lineWidth = 7 * p.scale;
           ctx.beginPath();
@@ -1274,7 +1262,7 @@ export default function App() {
           const cy = p.y - r - 10 * p.scale - elevOffset + Math.sin(g.frame * 0.15 + i) * 3 * p.scale;
           const spinWidth = Math.max(0.35, Math.abs(Math.cos(g.frame * 0.1 + i)));
 
-          ctx.fillStyle = 'rgba(250, 204, 21, 0.32)';
+          ctx.fillStyle = 'rgba(250, 204, 21, 0.28)';
           ctx.beginPath();
           ctx.arc(p.x, cy, r * 1.4, 0, Math.PI * 2);
           ctx.fill();
@@ -1313,15 +1301,12 @@ export default function App() {
         // --- COLLISION & RAMP BOARDING ---
         const sameLane = Math.abs(ent.lane - g.visualLane) < 0.42;
 
-        // Bus Boarding Ramp & Roof Check
         if (ent.type === 'bus' && sameLane && ent.z <= 0.10 && (ent.z + ent.length) >= 0) {
           if (ent.hasRamp && ent.z > -0.02 && g.y < 48) {
-            // Smoothly climb the ramp onto the bus roof!
             g.y = 50;
             g.vy = 0;
             g.isJumping = false;
           } else if (g.y < 38 && ent.z <= 0.05 && ent.z >= -0.04) {
-            // Hit front of bus without jumping or using ramp
             g.entities.splice(i, 1);
             spawnParticles(p.x, p.y - 45, '#ef4444', 20);
             g.shakeTimer = 15;
@@ -1440,7 +1425,7 @@ export default function App() {
       const py = playerProj.y - g.y * 1.6;
       const sheetCanvas = sheets[g.char.sheet];
 
-      ctx.fillStyle = 'rgba(0,0,0,0.4)';
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
       ctx.beginPath();
       ctx.ellipse(px, playerProj.y - (onBusRoof ? 48 * 1.6 : 0) + 4, 30, 10, 0, 0, Math.PI * 2);
       ctx.fill();
@@ -1495,16 +1480,13 @@ export default function App() {
         const beamY = gp.y - 195 * gp.scale;
         const poleW = Math.max(2, 7 * gp.scale);
 
-        // Left & Right Steel Pillars
         ctx.fillStyle = '#334155';
         ctx.fillRect(leftX - poleW / 2, beamY, poleW, gp.y - beamY);
         ctx.fillRect(rightX - poleW / 2, beamY, poleW, gp.y - beamY);
 
-        // Overhead Cross-Beam
         ctx.fillStyle = '#475569';
         ctx.fillRect(leftX, beamY, rightX - leftX, Math.max(2, 6 * gp.scale));
 
-        // Catenary Electric Wires connecting to the next Gantry ahead
         const nextGan = g.gantries[(idx + 1) % g.gantries.length];
         if (nextGan && nextGan.z > gan.z) {
           const np = project(1, Math.max(0, nextGan.z));
@@ -1512,8 +1494,8 @@ export default function App() {
           const nRightX = W / 2 + np.roadHalfW * 1.05;
           const nBeamY = np.y - 195 * np.scale;
 
-          ctx.strokeStyle = 'rgba(15, 23, 42, 0.72)';
-          ctx.lineWidth = Math.max(1, 2.2 * gp.scale);
+          ctx.strokeStyle = 'rgba(15, 23, 42, 0.55)';
+          ctx.lineWidth = Math.max(1, 2 * gp.scale);
           [0.2, 0.4, 0.6, 0.8].forEach(frac => {
             const x1 = leftX + (rightX - leftX) * frac;
             const x2 = nLeftX + (nRightX - nLeftX) * frac;
